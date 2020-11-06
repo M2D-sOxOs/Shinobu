@@ -1,0 +1,11 @@
+[submodule "Urusai"]
+path = Sources/Common/Urusai
+url = https://github.com/NarukanaHeart/Urusai.git
+
+[submodule "Jinja"]
+path = Sources/Common/Jinja
+url = https://github.com/NarukanaHeart/Jinja.git
+
+[submodule "Document"]
+path = Document
+url = https://github.com/NarukanaHeart/Shinobu-Document.git
