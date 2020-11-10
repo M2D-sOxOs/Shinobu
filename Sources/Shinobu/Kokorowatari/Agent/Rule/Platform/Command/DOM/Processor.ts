@@ -29,6 +29,5 @@ export class Processor {
       $$ = $.eq($i);
       eval(this.Sections[1]);
     }
-    writeFileSync('test.html', domObject.html());
   }
 }

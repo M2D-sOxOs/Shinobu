@@ -93,7 +93,6 @@ export class DOM extends Delegator {
     });
 
     this.AdditionalZones['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), this.Command.DOM!.Result);
-    writeFileSync('test.json', JSON.stringify(this.AdditionalZones['__RESULT__'], null, 2));
 
     return true;
   }

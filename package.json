@@ -5,7 +5,7 @@
   "main": "Release/Shinobu.js",
   "scripts": {
     "build-dev": "tsc -w -p Sources --outDir Release",
-    "build-release": "tsc -w Sources --outDir Release",
+    "build-release": "tsc Sources --outDir Release",
     "start-dev": "pkill Xvfb;JINJA_PATH=file://./Jinja/Shinobu.json xvfb-maybe electron --no-sandbox .",
     "start-prd": "pkill Xvfb;JINJA_PATH=http://127.0.0.1:8888/Shinobu.json xvfb-maybe electron --no-sandbox ."
   },
