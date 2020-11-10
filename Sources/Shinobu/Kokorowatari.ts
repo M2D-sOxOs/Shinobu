@@ -24,7 +24,18 @@ process.on('unhandledRejection', (e) => {
 export class Kokorowatari {
 
 
-  public static async Pool(): Promise<void> {
+  public static async Initialize(): Promise<void> {
+
+    Urusai.Text(`
+    _  ___         _                                _             _ 
+   | |/ / |       | |                              | |           (_)
+   | ' /| | _____ | | _____  _ __ _____      ____ _| |_ __ _ _ __ _ 
+   |  < | |/ / _ \\| |/ / _ \\| '__/ _ \\ \\ /\\ / / _\` | __/ _\` | '__| |
+   | . \\|   < (_) |   < (_) | | | (_) \\ V  V / (_| | || (_| | |  | |
+   |_|\\_\\_|\\_\\___/|_|\\_\\___/|_|  \\___/ \\_/\\_/ \\__,_|\\__\\__,_|_|  |_|
+                                                                    
+                                                                    
+  `)
     await Agent.Initialize();
     await Agent.Start();
   }

@@ -1,5 +1,5 @@
 import { platform } from "os";
-import { Jinja } from "../../../../Common/Jinja/Jinja";
+import { Jinja } from "../../../Common/Jinja/Jinja";
 import { Platform } from "./Rule/Platform";
 
 export type Table<T> = { [k: string]: T };

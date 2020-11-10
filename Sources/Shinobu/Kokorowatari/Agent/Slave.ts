@@ -3,7 +3,7 @@ import { Urusai } from "../../../Common/Urusai/Urusai";
 import { Agent, Frame } from "../Agent";
 import { Control } from "./Slave/Control";
 import { Request } from "./Slave/Request";
-import { Rule } from "./Slave/Rule";
+import { Rule } from "./Rule";
 import { Cache } from "./Slave/Cache";
 
 export class Slave {
@@ -44,13 +44,13 @@ export class Slave {
           Urusai.Verbose('HELLO Message received from master');
           this.__IPCMaster!.removeAllListeners();
 
-          Urusai.Verbose('Agent initializing rule set');
+          Urusai.Verbose('Slave initializing rule set');
           await Rule.Initialize();
 
           Urusai.Verbose('Binding final events');
           this.__IPCMaster!.on('data', (d) => {
 
-            Urusai.Verbose('Incoming data from Master', d.toString());
+            Urusai.Verbose('Incoming data from Master');
             this.__Buffer += d.toString('utf8');
 
             this.__Dispatch();
@@ -79,7 +79,7 @@ export class Slave {
     throw 'INT';
   }
 
-  private static __Dispatch() {
+  private static async __Dispatch() {
 
     if (-1 == this.__Buffer.indexOf('\n')) {
       Urusai.Verbose('No enough data to process, maybe already processed all received messages?');
@@ -106,6 +106,7 @@ export class Slave {
 
   public static async Send(dataFrame: Frame) {
     dataFrame.Id = Agent.GenerateID();
+    Urusai.Verbose('Sending', dataFrame.Action, 'frame', dataFrame.Id)
     this.__IPCMaster?.write(JSON.stringify(dataFrame) + '\n');
   }
 

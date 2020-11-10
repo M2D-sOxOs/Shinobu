@@ -1,12 +1,12 @@
 import Axios from "axios";
 import { stringify } from "querystring";
 import { Urusai } from "../../../../../Common/Urusai/Urusai";
-import { Table } from "../Rule";
-import { Client } from "../Rule/Platform/Client";
-import { Command } from "../Rule/Platform/Command";
-import { Request } from "../Rule/Platform/Command/Request";
-import { Expression } from "../Rule/Expression";
-import { Proxy } from "../Rule/Platform/Proxy";
+import { Table } from "../../Rule";
+import { Client } from "../../Rule/Platform/Client";
+import { Command } from "../../Rule/Platform/Command";
+import { Request } from "../../Rule/Platform/Command/Request";
+import { Expression } from "../../Rule/Expression";
+import { Proxy } from "../../Rule/Platform/Proxy";
 import { Tokei } from "../../../../../Common/Tokei/Tokei";
 
 export abstract class Delegator {

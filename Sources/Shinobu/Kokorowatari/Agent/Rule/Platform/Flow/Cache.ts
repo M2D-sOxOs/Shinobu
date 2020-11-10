@@ -1,4 +1,4 @@
-import { Expression } from "../../Expression";
+import { Expression } from "../../../Rule/Expression";
 
 export type CacheConfig = {
   Mode: 'PASSIVE' | 'ACTIVE',

@@ -2,6 +2,7 @@ import { Kokorowatari } from "./Shinobu/Kokorowatari"
 import { Urusai } from "./Common/Urusai/Urusai";
 import { Jinja } from "./Common/Jinja/Jinja";
 import { Master } from "./Shinobu/Kokorowatari/Agent/Master";
+import { Koyomi } from "./Shinobu/Koyomi";
 
 module Shinobu {
 
@@ -25,29 +26,33 @@ Project Shinobu`);
     await Urusai.Initialize();
 
     Urusai.Verbose('Initializing Kokorowatari pool')
-    await Kokorowatari.Pool();
+    await Kokorowatari.Initialize();
+    
+    Urusai.Verbose('Initializing Koyomi')
+    await Koyomi.Initialize();
+    
 
-    Master.Send({
-      Action: 'CONTROL',
-      Message: 'TRIAL_COMMAND',
-      Data: {
-        "Command": "Mercari.Commands.JSON-ItemDetail",
-        "Proxy": "Mercari.Proxies.Fiddler",
-        "Input": {
-          "Item": "m63162206098",
-          "Status": "on_sale,trading,sold_out"
-        }
-      }
-    });
+    // if (!requestId) {
+    //   Urusai.Error('Cannot send request')
+    //   return;
+    // } else {
+    //   Urusai.Verbose('Sent Request ID:', requestId);
+    // }
 
-    setTimeout(() => {
+    // Master.Callback((s, r, d) => {
+    //   Urusai.Verbose('Received Request ID:', r);
+    //   Urusai.Verbose('Received Request Status:', s);
+    //   Urusai.Verbose('Received Request Data:', d);
+    // })
 
-      Master.Send({
-        Action: 'CONTROL',
-        Message: 'TOKEI_REPORT',
-        Data: {
-        }
-      });
-    }, 10000);
+    // setTimeout(() => {
+
+    //   Master.Send({
+    //     Action: 'CONTROL',
+    //     Message: 'TOKEI_REPORT',
+    //     Data: {
+    //     }
+    //   });
+    // }, 10000);
   })();
 }

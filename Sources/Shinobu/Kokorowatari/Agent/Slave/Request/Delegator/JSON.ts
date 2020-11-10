@@ -2,12 +2,12 @@ import Axios, { AxiosResponse } from "axios";
 import { stringify } from "querystring";
 import { Tokei } from "../../../../../../Common/Tokei/Tokei";
 import { Urusai } from "../../../../../../Common/Urusai/Urusai";
-import { Table } from "../../Rule";
-import { Expression } from "../../Rule/Expression";
-import { Command } from "../../Rule/Platform/Command";
-import { JSON as JSONRule } from "../../Rule/Platform/Command/JSON";
-import { Result } from "../../Rule/Platform/Command/JSON/Result";
-import { Proxy } from "../../Rule/Platform/Proxy";
+import { Table } from "../../../Rule";
+import { Expression } from "../../../Rule/Expression";
+import { Command } from "../../../Rule/Platform/Command";
+import { JSON as JSONRule } from "../../../Rule/Platform/Command/JSON";
+import { Result } from "../../../Rule/Platform/Command/JSON/Result";
+import { Proxy } from "../../../Rule/Platform/Proxy";
 import { Delegator } from "../Delegator";
 
 export class JSON extends Delegator {

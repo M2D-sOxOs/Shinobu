@@ -1,9 +1,9 @@
-import { Urusai } from "../../../../../../Common/Urusai/Urusai";
+import { Urusai } from "../../../../../Common/Urusai/Urusai";
 import { Table } from "../../Rule";
 import { Client, ClientConfig } from "./Client";
 import { JSON, JSONConfig } from "../Platform/Command/JSON";
 import { Request, RequestConfig } from "../Platform/Command/Request";
-import { Expression } from "../Expression";
+import { Expression } from "../../Rule/Expression";
 import { Cache, CacheConfig } from "./Command/Cache";
 import { DOM, DOMConfig } from "./Command/DOM";
 

@@ -1,5 +1,5 @@
 import { Table } from "../../Rule";
-import { Expression } from "../Expression";
+import { Expression } from "../../Rule/Expression";
 
 export type ClientConfig = {
   Host: string,

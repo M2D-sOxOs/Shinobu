@@ -1,5 +1,5 @@
 import { Condition, ConditionConfig } from "./JSON/Condition";
-import { Expression } from "../../Expression";
+import { Expression } from "../../../Rule/Expression";
 import { Result, ResultConfig } from "./JSON/Result";
 
 export type JSONConfig = {

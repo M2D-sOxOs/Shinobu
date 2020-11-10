@@ -1,4 +1,4 @@
-import { Expression } from "../Expression";
+import { Expression } from "../../Rule/Expression";
 import { Cache, CacheConfig } from "../Platform/Flow/Cache";
 
 export type FlowConfig = {

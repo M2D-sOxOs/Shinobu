@@ -1,4 +1,4 @@
-import { Urusai } from "../../../../../../../../Common/Urusai/Urusai";
+import { Urusai } from "../../../../../../../Common/Urusai/Urusai";
 import { Expression } from "../../../Expression";
 
 export type ConditionConfigEntity = {

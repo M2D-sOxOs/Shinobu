@@ -3,12 +3,12 @@ import { load } from "cheerio";
 import { writeFileSync } from "fs";
 import { stringify } from "querystring";
 import { Urusai } from "../../../../../../Common/Urusai/Urusai";
-import { Table } from "../../Rule";
-import { Expression } from "../../Rule/Expression";
-import { Command } from "../../Rule/Platform/Command";
-import { DOM as DOMRule } from "../../Rule/Platform/Command/DOM";
-import { Result } from "../../Rule/Platform/Command/DOM/Result";
-import { Proxy } from "../../Rule/Platform/Proxy";
+import { Table } from "../../../Rule";
+import { Expression } from "../../../Rule/Expression";
+import { Command } from "../../../Rule/Platform/Command";
+import { DOM as DOMRule } from "../../../Rule/Platform/Command/DOM";
+import { Result } from "../../../Rule/Platform/Command/DOM/Result";
+import { Proxy } from "../../../Rule/Platform/Proxy";
 import { Delegator } from "../Delegator";
 
 export class DOM extends Delegator {

@@ -2,12 +2,15 @@ import { Jinja } from "../../../../Common/Jinja/Jinja";
 import { Tokei } from "../../../../Common/Tokei/Tokei";
 import { Urusai } from "../../../../Common/Urusai/Urusai";
 import { Frame } from "../../Agent";
+import { Slave } from "../Slave";
 import { Cache } from "./Cache";
 import { DOM } from "./Request/Delegator/DOM";
 import { JSON } from "./Request/Delegator/JSON";
-import { Expression } from "./Rule/Expression";
-import { Command } from "./Rule/Platform/Command";
-import { Proxy } from "./Rule/Platform/Proxy";
+import { Rule, Table } from "../Rule";
+import { Expression } from "../Rule/Expression";
+import { Command } from "../Rule/Platform/Command";
+import { Flow } from "../Rule/Platform/Flow";
+import { Proxy } from "../Rule/Platform/Proxy";
 
 /**
  * All things moving on Request
@@ -16,8 +19,46 @@ export class Request {
 
   private static __Pending: { [k: string]: number } = {};
 
-  public static async Process(dataFrame: Frame) {
+  /**
+   * Actual processor for flows
+   */
+  public static async Process(dataFrame: Frame): Promise<void> {
 
+    return new Promise(async (s, f) => {
+      const result = await this.__Process(dataFrame.Id!, new Expression(dataFrame.Message), dataFrame.Data);
+      Slave.Send(false === result ? {
+        Reply: dataFrame.Id!,
+        Action: 'RESPONSE',
+        Data: {},
+        Message: 'FAILURE'
+      } : {
+          Reply: dataFrame.Id!,
+          Action: 'RESPONSE',
+          Data: result,
+          Message: 'SUCCESS'
+        });
+      s();        
+    })
+  }
+
+  /**
+   * Process with flow
+   */
+  private static async __Process(requestId: string, flowExpr: Expression, additionalZones: any, sessionStorage: any = {}): Promise<any> {
+
+    const flowObject: Flow = await flowExpr.Value();
+
+    let isFailure = 0 == flowObject.Flow.length;
+    for (let flowIndex = 0; flowIndex < flowObject.Flow.length; flowIndex++) {
+      if (false === await this.__Execute(flowObject.Flow[flowIndex].Expression ? flowObject.Flow[flowIndex].Expression.replace(/^./, '#') : '#' + flowIndex, await flowObject.Flow[flowIndex].Value(), sessionStorage, additionalZones)) {
+        isFailure = true;
+        break;
+      }
+    }
+
+    if (isFailure) return false;
+
+    return additionalZones['__RESULT__'];
   }
 
   public static async Execute(command: string, sessionStorage: any, additionalZones: any) {
@@ -32,6 +73,10 @@ export class Request {
     const commandExpression: Expression = new Expression('*' + command);
     const commandObject: Command = await commandExpression.Value();
 
+    return await this.__Execute(quickCommandName, commandObject, sessionStorage, additionalZones);
+  }
+
+  private static async __Execute(quickCommandName: string, commandObject: Command, sessionStorage: any, additionalZones: any) {
     let cacheKey = '';
     if (commandObject.Cache) {
       Urusai.Verbose('Trying to use cache');

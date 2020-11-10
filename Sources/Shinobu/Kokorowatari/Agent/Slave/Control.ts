@@ -2,7 +2,7 @@ import { Tokei } from "../../../../Common/Tokei/Tokei";
 import { Urusai } from "../../../../Common/Urusai/Urusai";
 import { Frame } from "../../Agent";
 import { Request } from "./Request";
-import { Expression } from "./Rule/Expression";
+import { Expression } from "../Rule/Expression";
 
 export type TrialCommandData = {
   Command: string,

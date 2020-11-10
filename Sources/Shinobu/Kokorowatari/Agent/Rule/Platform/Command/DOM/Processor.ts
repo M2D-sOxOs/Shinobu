@@ -1,7 +1,7 @@
 import { load } from "cheerio";
 import { writeFileSync } from "fs";
-import { Urusai } from "../../../../../../../../Common/Urusai/Urusai";
-import { Expression } from "../../../Expression";
+import { Urusai } from "../../../../../../../Common/Urusai/Urusai";
+import { Expression } from "../../../../Rule/Expression";
 
 export type ProcessorConfig = string;
 

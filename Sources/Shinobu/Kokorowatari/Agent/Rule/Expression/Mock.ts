@@ -1,4 +1,4 @@
-import { Urusai } from "../../../../../../Common/Urusai/Urusai";
+import { Urusai } from "../../../../../Common/Urusai/Urusai";
 import { Table } from "../../Rule";
 import { Base } from "./Mock/Base";
 import { UUID } from "./Mock/UUID";

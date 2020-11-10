@@ -1,5 +1,5 @@
-import { Urusai } from "../../../../../Common/Urusai/Urusai";
-import { Request } from "../Request";
+import { Urusai } from "../../../../Common/Urusai/Urusai";
+import { Request } from "../Slave/Request";
 import { Rule, Table } from "../Rule";
 import { Mock } from "./Expression/Mock";
 import { Platform } from "./Platform";
@@ -14,6 +14,9 @@ export class Expression {
   /**
    * User input expression string
    */
+  public get Expression() {
+    return this._Expression;
+  }
   protected _Expression: string = '';
 
   constructor(expressionOrMap: string | any) {
@@ -126,7 +129,6 @@ export class Expression {
 
     // If zone keys exists
     const expressionParts: string[] = this.__ZoneKeys || this._Expression.substr(1).split('.');
-    console.log(this._Expression)
 
     let searchZone: any = this.__Zone || (this.__ZoneName ? additionalZones[this.__ZoneName] : Rule.Platforms);
     for (let partIndex = 0; partIndex < expressionParts.length; partIndex++) {

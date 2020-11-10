@@ -5,7 +5,10 @@ import { cpus } from "os";
 import { Jinja } from "../../../Common/Jinja/Jinja";
 import { Urusai } from "../../../Common/Urusai/Urusai";
 import { Agent, Frame } from "../Agent";
-import { Table } from "./Slave/Rule";
+import { Rule, Table } from "./Rule";
+import { Expression } from "./Rule/Expression";
+import { Flow } from "./Rule/Platform/Flow";
+import { Cache } from "./Master/Cache";
 
 export class Master {
 
@@ -26,9 +29,10 @@ export class Master {
   /**
    * Callbacks
    */
-  private static __Responses: ((s: number, requestId: string, d: any) => void)[] = [];
   private static __Buffers: { [k: string]: string } = {};
   private static __Requesting: { [k: string]: string } = {};
+  private static __Flowing: { [k: string]: Flow } = {};
+  private static __Additional: { [k: string]: any } = {};
 
   //#endregion
 
@@ -42,21 +46,23 @@ export class Master {
     const poolSize: number = Jinja.Get('Kokorowatari.Pool.Size') || (cpus().length - 1);
     const processObject = { Current: 0, Total: poolSize };
 
-    return new Promise<void>(async (s, f) => {
+    Urusai.Verbose('Master initializing rule set');
+    await Rule.Initialize();
 
-      // const indicator: Promise<void> = Urusai.Progress('Initialize agents......', processObject);
-      for (let poolIndex = 0; poolIndex < poolSize; poolIndex++) {
+    Urusai.Verbose('Master initializing cache');
+    await Cache.Initialize();
 
-        const agentId: string = Agent.GenerateID();
+    // const indicator: Promise<void> = Urusai.Progress('Initialize agents......', processObject);
+    for (let poolIndex = 0; poolIndex < poolSize; poolIndex++) {
 
-        await this.__Run(agentId);
-        processObject.Current++;
-      }
+      const agentId: string = Agent.GenerateID();
 
-      // await indicator;
-      Urusai.Verbose('Kotorowatari agents all ready')
-      s();
-    })
+      await this.__Run(agentId);
+      processObject.Current++;
+    }
+
+    // await indicator;
+    Urusai.Verbose('Kotorowatari slaves all ready')
   }
 
   private static async __Online(agentId: string): Promise<void> {
@@ -99,9 +105,12 @@ export class Master {
 
   private static async __Event(agentId: string) {
 
+    // Initialize buffer
+    this.__Buffers[agentId] = '';
+
     this.Connections[agentId].on('data', async (d) => {
 
-      Urusai.Verbose('Incoming data from Slave', agentId, ':', d.toString('utf-8'));
+      Urusai.Verbose('Incoming data from Slave', agentId);
       this.__Buffers[agentId] += d.toString('utf-8');
       await this.__EventDispatch(agentId);
     })
@@ -113,14 +122,13 @@ export class Master {
       return;
     }
 
-
     const frameData: Frame = JSON.parse(this.__Buffers[agentId].substr(0, this.__Buffers[agentId].indexOf('\n')));
     this.__Buffers[agentId] = this.__Buffers[agentId].substr(this.__Buffers[agentId].indexOf('\n') + 1);
     Urusai.Verbose('A', frameData.Action, 'frame received');
 
     switch (frameData.Action) {
       case 'RESPONSE':
-        this.__Responses.forEach(v => v(0, frameData.Reply!, frameData.Data));
+        this.__Response(frameData.Message == 'SUCCESS' ? 0 : 1, frameData.Reply!, frameData.Data);
         break;
       default:
         Urusai.Error('Unsupported action', frameData.Action, 'at this time');
@@ -164,7 +172,8 @@ export class Master {
         if (this.__Requesting[requestId] != agentId) continue;
 
         delete this.__Requesting[requestId];
-        this.__Responses.forEach(v => v(0, requestId, null));
+        delete this.__Flowing[requestId];
+        this.__Response(1, requestId, null);
       }
 
       Urusai.Verbose('Restarting agent:', agentId);
@@ -178,8 +187,8 @@ export class Master {
     return new Promise<void>((s, f) => setTimeout(s, 100));
   }
 
-  public static Send(dataFrame: Frame, agentId?: string): string {
-    dataFrame.Id = Agent.GenerateID();
+  public static Send(dataFrame: Frame, agentId?: string, requestId?: string): string {
+    dataFrame.Id = requestId || Agent.GenerateID();
     return this.__Send(dataFrame, agentId || this.__Pick());
   }
 
@@ -196,23 +205,68 @@ export class Master {
   /**
    * Perform an actual crawl
    */
-  public static Perform(flowName: string, userInput: Table<string>): string {
-    const agentId = this.__Pick(), requestId = this.Send({
-      Action: 'REQUEST',
-      Message: flowName,
-      Data: {
-        __IN__: userInput
+  public static async Perform(flowName: string, userInput: Table<string>): Promise<string | null> {
+
+    return await this.__Perform(new Expression('*' + flowName), {
+      __IN__: userInput
+    });
+  }
+
+  private static async __Perform(flowExpr: Expression, additionalZones: any, requestId?: string): Promise<string | null> {
+
+    const flowObject: Flow = await flowExpr.Value();
+    if (flowObject.Cache) {
+      let cacheKey = '';
+      for (const key of flowObject.Cache.Key) cacheKey += (await key.Value()) + '-';
+    }
+
+    if (0 == flowObject.Flow.length) {
+      if (flowObject.Failover) {
+        Urusai.Verbose('Using flow as a virtual node');
+        return await this.__Perform(flowObject.Failover, additionalZones, requestId);
       }
-    }, agentId);
-    this.__Requesting[requestId] = agentId;
+
+      Urusai.Warning('Using flow as a virtual node without providing failover will always return false');
+      return null;
+    }
+
+    const agentId = this.__Pick();
+    requestId = requestId || Agent.GenerateID();
+    this.Send({
+      Action: 'REQUEST',
+      Message: flowExpr.Expression,
+      Data: additionalZones
+    }, agentId, requestId);
+    this.__Requesting[requestId] = requestId;
+    this.__Additional[requestId] = additionalZones;
+    this.__Flowing[requestId] = flowObject;
     return requestId;
   }
 
   /**
    * Response event
    */
-  public static Response(cb: (status: number, requestId: string, responseData: any) => void) {
-    this.__Responses.push(cb);
+  public static async __Response(status: number, requestId: string, responseData: any) {
+
+    Urusai.Verbose('Handling response of request', requestId);
+    delete this.__Requesting[requestId];
+
+    // Failure try next
+    if (1 == status && this.__Flowing[requestId].Failover) {
+      Urusai.Verbose('Flow is failure but has an failover', this.__Flowing[requestId].Failover!.Expression);
+      return this.__Perform(this.__Flowing[requestId].Failover!, this.__Additional[requestId], requestId);
+    }
+
+    // End of life
+    delete this.__Additional[requestId];
+    delete this.__Flowing[requestId];
+
+    this.__CALLBACKS.forEach(v => v(status, requestId, responseData));
+  }
+
+  private static readonly __CALLBACKS: ((status: number, requestId: string, responseData: any) => void)[] = [];
+  public static async Callback(cb: (status: number, requestId: string, responseData: any) => void) {
+    this.__CALLBACKS.push(cb);
   }
 
 }
