@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { Jinja } from "../Common/Jinja/Jinja";
 import { Urusai } from "../Common/Urusai/Urusai";
@@ -10,7 +11,17 @@ import { Table } from "./Kokorowatari/Agent/Rule";
  */
 export class Koyomi {
 
-  private static __Responses: Table<ServerResponse> = {};
+  private static __Responses: Table<ServerResponse[]> = {};
+
+  /**
+   * Using Request ID to find Hash
+   */
+  private static __RequestHash: Table<string> = {};
+
+  /**
+   * Using Request Hash to find ID
+   */
+  private static __HashRequest: Table<string> = {};
 
   public static async Initialize(): Promise<void> {
 
@@ -34,17 +45,23 @@ export class Koyomi {
 
       if (!(r in this.__Responses)) return;
 
-      const response = this.__Responses[r];
+      const responses = this.__Responses[r];
       delete this.__Responses[r];
+      delete this.__HashRequest[this.__RequestHash[r]];
+      delete this.__RequestHash[r];
 
       if (1 == s) {
-        response.writeHead(500, 'Koyomi Failure');
-        response.end();
+        responses.forEach(r => {
+          r.writeHead(500, 'Koyomi Failure');
+          r.end();
+        });
         return;
       }
 
-      response.writeHead(200, 'Koyomi Success');
-      response.end(JSON.stringify(d));
+      responses.forEach(r => {
+        r.writeHead(200, 'Koyomi Success');
+        r.end(JSON.stringify(d));
+      });
     })
   }
 
@@ -61,23 +78,39 @@ export class Koyomi {
 
       if ('/' == q.url) return p.end();
 
-      Urusai.Verbose('Calling flow', q.url!.substr(1), 'using data', jsonData);
+      const flowName = q.url!.substr(1);
+      Urusai.Verbose('Calling flow', flowName, 'using data', jsonData);
 
       try {
-        var requestData = JSON.parse(jsonData);
+        const reqHash = createHash('md5').update(flowName + '-' + jsonData).digest().toString('hex');
+
         p.setTimeout(Jinja.Get('Koyomi.Timeout'), () => {
           Urusai.Warning('Timeout when processing request');
           p.writeHead(504, 'Koyomi Timeout');
           p.end();
         });
 
-        const requestId = await Master.Perform(q.url!.substr(1), requestData);
+        // Already in request
+        if (reqHash in this.__HashRequest) {
+          Urusai.Verbose('Merged request of', reqHash);
+          const pendingRequestId = this.__HashRequest[reqHash];
+          this.__Responses[pendingRequestId] = this.__Responses[pendingRequestId] || [];
+          this.__Responses[pendingRequestId].push(p);
+          return;
+        }
+
+        var requestData = JSON.parse(jsonData);
+
+        const requestId = await Master.Perform(flowName, requestData);
         if (!requestId) {
           Urusai.Error('Cannot create request');
           throw '';
         }
 
-        this.__Responses[requestId] = p;
+        this.__HashRequest[reqHash] = requestId;
+        this.__RequestHash[requestId] = reqHash;
+        this.__Responses[requestId] = this.__Responses[requestId] || [];
+        this.__Responses[requestId].push(p);
       } catch {
         Urusai.Error('Something went wrong when processing request');
         p.end();

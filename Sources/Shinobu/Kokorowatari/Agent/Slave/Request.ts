@@ -96,7 +96,7 @@ export class Request {
       case 'JSON':
         Urusai.Verbose('Perform with JSON');
         if (!await (await (new JSON(commandObject, sessionStorage, additionalZones)).Initialize()).Perform()) {
-          Urusai.Warning('Execute command failed');
+          Urusai.Warning('Execute command', quickCommandName, 'failed');
           return false;
         }
         break;
