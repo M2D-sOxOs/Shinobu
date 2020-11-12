@@ -24,6 +24,7 @@ export class Request {
    */
   public static async Process(dataFrame: Frame): Promise<void> {
 
+    Urusai.Verbose('Start processing REQUEST frame')
     return new Promise(async (s, f) => {
       const result = await this.__Process(dataFrame.Id!, new Expression(dataFrame.Message), dataFrame.Data);
       Slave.Send(false === result ? {
@@ -37,7 +38,7 @@ export class Request {
           Data: result,
           Message: 'SUCCESS'
         });
-      s();        
+      s();
     })
   }
 

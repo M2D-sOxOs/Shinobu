@@ -107,11 +107,13 @@ export class Koyomi {
           throw '';
         }
 
-        this.__HashRequest[reqHash] = requestId;
-        this.__RequestHash[requestId] = reqHash;
-        this.__Responses[requestId] = this.__Responses[requestId] || [];
-        this.__Responses[requestId].push(p);
-      } catch {
+        if (Jinja.Get('Koyomi.Merge')) {
+          this.__HashRequest[reqHash] = requestId;
+          this.__RequestHash[requestId] = reqHash;
+        }
+        this.__Responses[requestId] = [p];
+      } catch(e) {
+        console.log(e);
         Urusai.Error('Something went wrong when processing request');
         p.end();
       }

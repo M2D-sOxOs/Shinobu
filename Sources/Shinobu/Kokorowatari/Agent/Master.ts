@@ -217,7 +217,7 @@ export class Master {
     const flowObject: Flow = await flowExpr.Value();
     if (flowObject.Cache) {
       let cacheKey = '';
-      for (const key of flowObject.Cache.Key) cacheKey += (await key.Value()) + '-';
+      for (const key of flowObject.Cache.Key) cacheKey += (await key.Value({}, additionalZones)) + '-';
     }
 
     if (0 == flowObject.Flow.length) {
