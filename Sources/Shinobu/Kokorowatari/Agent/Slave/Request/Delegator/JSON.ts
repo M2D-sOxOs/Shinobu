@@ -1,4 +1,5 @@
 import Axios, { AxiosResponse } from "axios";
+import { Console } from "console";
 import { stringify } from "querystring";
 import { Tokei } from "../../../../../../Common/Tokei/Tokei";
 import { Urusai } from "../../../../../../Common/Urusai/Urusai";
@@ -96,7 +97,6 @@ export class JSON extends Delegator {
       
         return resultArray;
       case 'TABLE':
-        
         const outputObject: any = {};
         for (const resultKey in result.Value as Table<Result>) outputObject[resultKey] = await this.__PerformResultStructure((result.Value as Table<Result>)[resultKey]);
         return outputObject;
