@@ -32,6 +32,7 @@ export class Master {
   private static __Buffers: { [k: string]: string } = {};
   private static __Requesting: { [k: string]: string } = {};
   private static __Flowing: { [k: string]: Flow } = {};
+  private static __Expression: { [k: string]: string } = {};
   private static __Additional: { [k: string]: any } = {};
 
   //#endregion
@@ -218,6 +219,9 @@ export class Master {
     if (flowObject.Cache) {
       let cacheKey = '';
       for (const key of flowObject.Cache.Key) cacheKey += (await key.Value({}, additionalZones)) + '-';
+
+      const cacheData = await Cache.Get(cacheKey, flowObject.Cache.Mode);
+      if (cacheData) return cacheData;
     }
 
     if (0 == flowObject.Flow.length) {
@@ -240,6 +244,7 @@ export class Master {
     this.__Requesting[requestId] = requestId;
     this.__Additional[requestId] = additionalZones;
     this.__Flowing[requestId] = flowObject;
+    this.__Expression[requestId] = flowExpr.Expression;
     return requestId;
   }
 
@@ -257,9 +262,22 @@ export class Master {
       return this.__Perform(this.__Flowing[requestId].Failover!, this.__Additional[requestId], requestId);
     }
 
+    // Write cache
+    const flowObject = this.__Flowing[requestId];
+    if (flowObject.Cache) {
+      let cacheExpire = await flowObject.Cache.Expire.Value();
+      if ('+' == cacheExpire[0]) cacheExpire = new Date().getTime() + cacheExpire;
+
+      let cacheKey = '';
+      for (const key of flowObject.Cache.Key) cacheKey += (await key.Value({}, this.__Additional[requestId])) + '-';
+
+      Cache.Set(cacheKey, responseData, this.__Expression[requestId], this.__Additional[requestId], cacheExpire, flowObject.Cache.Mode);
+    }
+
     // End of life
     delete this.__Additional[requestId];
     delete this.__Flowing[requestId];
+    delete this.__Expression[requestId];
 
     this.__CALLBACKS.forEach(v => v(status, requestId, responseData));
   }
