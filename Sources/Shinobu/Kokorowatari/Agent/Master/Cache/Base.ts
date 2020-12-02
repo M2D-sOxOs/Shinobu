@@ -22,7 +22,7 @@ export class Base {
   }
 
   public async Get(cacheKey: string) {
-    return this._Data[cacheKey].Raw;
+    return (this._Data[cacheKey] || {}).Raw;
   }
 
   public async Set(cacheKey: string, cacheValue: any, flowName: string, inData: any, expire: number) {
