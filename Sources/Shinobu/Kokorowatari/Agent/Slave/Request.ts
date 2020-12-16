@@ -57,8 +57,10 @@ export class Request {
         host: proxy.Server,
         port: proxy.Port
       });
-      sessionStorage.Proxy.httpAgent = socksAgent.httpAgent;
-      sessionStorage.Proxy.httpsAgent = socksAgent.httpsAgent;
+      sessionStorage.Proxy = {
+        httpAgent: socksAgent.httpAgent,
+        httpsAgent: socksAgent.httpsAgent
+      };
     }
 
     let isFailure = 0 == flowObject.Flow.length;
