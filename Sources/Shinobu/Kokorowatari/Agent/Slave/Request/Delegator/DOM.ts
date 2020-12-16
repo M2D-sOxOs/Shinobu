@@ -48,7 +48,8 @@ export class DOM extends Delegator {
         params: inflatedParameters,
         data: 'application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : inflatedFormFields,
         timeout: this._Request.Timeout,
-        proxy: this.Session.Proxy ? { host: this.Session.Proxy.Server, port: this.Session.Proxy.Port } : undefined
+        httpAgent: this.Session.Proxy ? this.Session.Proxy.httpAgent : undefined,
+        httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined
       });
 
       this.AdditionalZones['__OUT__'] = axiosResult.data;

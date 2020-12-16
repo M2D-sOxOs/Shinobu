@@ -12,6 +12,8 @@ import { Command } from "../Rule/Platform/Command";
 import { Flow } from "../Rule/Platform/Flow";
 import { Proxy } from "../Rule/Platform/Proxy";
 
+const SocksAgent = require('axios-socks5-agent');
+
 /**
  * All things moving on Request
  */
@@ -48,6 +50,16 @@ export class Request {
   private static async __Process(requestId: string, flowExpr: Expression, additionalZones: any, sessionStorage: any = {}): Promise<any> {
 
     const flowObject: Flow = await flowExpr.Value();
+
+    if (flowObject.Proxy) {
+      const proxy: Proxy = await flowObject.Proxy.Value();
+      const socksAgent = new SocksAgent({
+        host: proxy.Server,
+        port: proxy.Port
+      });
+      sessionStorage.Proxy.httpAgent = socksAgent.httpAgent;
+      sessionStorage.Proxy.httpsAgent = socksAgent.httpsAgent;
+    }
 
     let isFailure = 0 == flowObject.Flow.length;
     for (let flowIndex = 0; flowIndex < flowObject.Flow.length; flowIndex++) {
