@@ -1,6 +1,6 @@
 [submodule "Sources/Common/Jinja"]
 	path = Sources/Common/Jinja
-	url = https://github.com/NarukanaHeart/Jinja.git
+	url = https://git-oa.030mall.com/sOxOs/Jinja.git
 [submodule "Sources/Common/Urusai"]
 	path = Sources/Common/Urusai
-	url = https://github.com/NarukanaHeart/Urusai.git
+	url = https://git-oa.030mall.com/sOxOs/Urusai.git
