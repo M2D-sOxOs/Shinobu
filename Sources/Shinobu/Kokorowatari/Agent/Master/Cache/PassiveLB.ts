@@ -15,6 +15,7 @@ export class PassiveLB extends Base {
   public async Get(cacheKey: string) {
 
     const cacheEntry: Entry = this._Data[cacheKey];
+    if(!cacheEntry) return null;
     const currentTime = new Date().getTime();
 
     if (currentTime > cacheEntry.Expire && -1 == this._Pending.indexOf(cacheKey)) this._Pending.push(cacheKey);
