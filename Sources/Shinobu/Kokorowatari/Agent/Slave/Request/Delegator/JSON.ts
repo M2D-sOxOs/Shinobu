@@ -56,6 +56,7 @@ export class JSON extends Delegator {
       });
 
       this.AdditionalZones['__OUT__'] = axiosResult.data;
+      this.AdditionalZones['__STATUS__'] = axiosResult.status;
       return true;
     } catch (e) {
       Urusai.Error('Error happened when processing request:', this._Request.Method, this._Client.Host + this._Request.URL);
