@@ -84,10 +84,11 @@ export class JSON extends Delegator {
     }
 
     switch (result.Type) {
+      case 'CONCAT': return (await Promise.all((result.Value as Expression[]).map(v => v.Value(this.Session, this.AdditionalZones)))).join('');
       case 'SIMPLE':
       case 'URL': return await (result.Value as Expression).Value(this.Session, this.AdditionalZones);
       case 'ARRAY':
-        
+
         // Map
         if (!result.MapFrom || !result.MapTo) Urusai.Panic('Map is required when type is set to Array');
         const searchArray: any[] = await result.MapFrom!.Value(this.Session, this.AdditionalZones);
@@ -96,7 +97,7 @@ export class JSON extends Delegator {
           this.AdditionalZones[result.MapTo] = v;
           resultArray.push(await this.__PerformResultStructure(result.Value as Result));
         }
-      
+
         return resultArray;
       case 'TABLE':
         const outputObject: any = {};

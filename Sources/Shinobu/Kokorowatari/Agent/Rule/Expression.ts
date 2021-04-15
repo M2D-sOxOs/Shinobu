@@ -154,7 +154,7 @@ export class Expression {
     switch (this._Type) {
       case 'DYNAMIC': return this.__Find(additionalZones);
       case 'STATIC': return this._Map;
-      case 'MOCK': return this.__Mocker!.Value(sessionStorage);
+      case 'MOCK': return this.__Mocker!.Value(sessionStorage, additionalZones);
       case 'EXECUTION': return Request.Execute(this._Expression, sessionStorage, additionalZones);
     }
 
