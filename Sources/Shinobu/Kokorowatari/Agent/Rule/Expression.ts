@@ -9,7 +9,7 @@ import { Platform } from "./Platform";
  */
 export class Expression {
 
-  protected _Type: 'DYNAMIC' | 'STATIC' | 'EXECUTION' | 'MOCK' = 'STATIC';
+  protected _Type: 'DYNAMIC' | 'STATIC' | 'EXECUTION' | 'MOCK' | 'COMPLEX' | 'COMMAND' = 'STATIC';
 
   /**
    * User input expression string
@@ -25,7 +25,13 @@ export class Expression {
     if ('string' == typeof expressionOrMap) {
       this._Expression = expressionOrMap;
       this.__Parse();
-    } else this._Map = expressionOrMap;
+    } else {
+      this._Map = expressionOrMap;
+      if ('object' == typeof expressionOrMap) {
+        this._Type = 'COMPLEX';
+        for (const key in this._Map) this._Map[key] = new Expression(this._Map[key]);
+      }
+    }
   }
 
   /**
@@ -66,6 +72,12 @@ export class Expression {
         this._Type = 'MOCK';
 
         if (!this.__Mock()) Urusai.Panic('Invalid expression:', this._Expression);
+        break;
+
+      // Execution
+      case '>':
+        this._Type = 'COMMAND';
+        this._Expression = this._Expression.substr(1).replace(/\$([A-Z_]+)/g, '(additionalZones["$1"] || sessionStorage["$1"])');
         break;
 
       case '\\':
@@ -156,6 +168,18 @@ export class Expression {
       case 'STATIC': return this._Map;
       case 'MOCK': return this.__Mocker!.Value(sessionStorage, additionalZones);
       case 'EXECUTION': return Request.Execute(this._Expression, sessionStorage, additionalZones);
+      case 'COMMAND':
+        let resultValue: any = null;
+        try {
+          eval(`resultValue = ${this._Expression}`);
+        } catch {
+          Urusai.Warning('Expression', this._Expression, 'execution failed');
+        }
+        return resultValue;
+      case 'COMPLEX':
+        const resultObject: any = this._Map instanceof Array ? [] : {};
+        for (const key in this._Map) resultObject[key] = await this._Map[key].Value(sessionStorage, additionalZones);
+        return resultObject;
     }
 
     Urusai.Warning('Expression', this._Expression, 'matched nothing');

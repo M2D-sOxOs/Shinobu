@@ -49,7 +49,7 @@ export class JSON extends Delegator {
         method: this._Request.Method,
         headers: inflatedHeaders,
         params: inflatedParameters,
-        data: 'application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : inflatedFormFields,
+        data: 'application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : global.JSON.stringify(inflatedFormFields),
         timeout: this._Request.Timeout,
         httpAgent: this.Session.Proxy ? this.Session.Proxy.httpAgent : undefined,
         httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined
@@ -61,6 +61,7 @@ export class JSON extends Delegator {
     } catch (e) {
       Urusai.Error('Error happened when processing request:', this._Request.Method, this._Client.Host + this._Request.URL);
       Urusai.Error('Original error message:', e.message);
+      console.log(e)
       return false;
     }
   }
@@ -103,6 +104,8 @@ export class JSON extends Delegator {
         const outputObject: any = {};
         for (const resultKey in result.Value as Table<Result>) outputObject[resultKey] = await this.__PerformResultStructure((result.Value as Table<Result>)[resultKey]);
         return outputObject;
+      case 'NULL':
+        return null;
     }
 
     Urusai.Panic('Unknown type of Result, Check your configuration file');

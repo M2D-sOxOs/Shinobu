@@ -12,7 +12,7 @@ export type ResultConfig = {
 
 export class Result {
 
-  public readonly Type: 'CONCAT' | 'SIMPLE' | 'TABLE' | 'ARRAY' | 'URL';
+  public readonly Type: 'CONCAT' | 'SIMPLE' | 'TABLE' | 'ARRAY' | 'URL' | 'NULL';
   public readonly MapFrom?: Expression;
   public readonly MapTo?: string;
   public readonly Value: Expression | Result | Table<Result> | Array<Expression>;

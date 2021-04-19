@@ -19,6 +19,8 @@ Project Shinobu`);
 
   (async () => {
 
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
     Urusai.Verbose('Initializing Jinja');
     await Jinja.Initialize();
 
