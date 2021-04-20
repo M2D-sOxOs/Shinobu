@@ -16,6 +16,7 @@ export class RakutenSort extends Base {
       case 'price-asc': return 'price_low_to_high';
       case 'price-desc': return 'price_high_to_low';
       case 'created_time-desc': return 'newest';
+      default: return 'relevancy';
     }
     return '';
   }
