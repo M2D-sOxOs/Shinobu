@@ -93,6 +93,7 @@ export class JSON extends Delegator {
         // Map
         if (!result.MapFrom || !result.MapTo) Urusai.Panic('Map is required when type is set to Array');
         const searchArray: any[] = await result.MapFrom!.Value(this.Session, this.AdditionalZones);
+        if (!searchArray) return [];
         const resultArray: any[] = [];
         for await (const v of searchArray) {
           this.AdditionalZones[result.MapTo] = v;
