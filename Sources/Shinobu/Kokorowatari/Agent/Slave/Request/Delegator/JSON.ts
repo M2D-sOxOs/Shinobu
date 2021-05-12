@@ -76,7 +76,7 @@ export class JSON extends Delegator {
     this.AdditionalZones['__RESULT__'] = await this.__PerformResultStructure(this._JSON.Result);
     return true;
   }
-
+  
   private async __PerformResultStructure(result?: Result) {
 
     if (!result) {

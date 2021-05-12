@@ -64,7 +64,7 @@ export class Expression {
       // Execution
       case '#':
         this._Type = 'EXECUTION';
-        this._Expression = this._Expression.substr(1);
+        this._Expression = this._Expression.substr(1).replace(/\$([A-Za-z_]+)/g, '(additionalZones["$1"] || sessionStorage["$1"])');
         break;
 
       // Mock
@@ -77,7 +77,7 @@ export class Expression {
       // Execution
       case '>':
         this._Type = 'COMMAND';
-        this._Expression = this._Expression.substr(1).replace(/\$([A-Z_]+)/g, '(additionalZones["$1"] || sessionStorage["$1"])');
+        this._Expression = this._Expression.substr(1).replace(/\$([A-Za-z_]+)/g, '(additionalZones["$1"] || sessionStorage["$1"])');
         break;
 
       case '\\':
@@ -167,7 +167,11 @@ export class Expression {
       case 'DYNAMIC': return this.__Find(additionalZones);
       case 'STATIC': return this._Map;
       case 'MOCK': return this.__Mocker!.Value(sessionStorage, additionalZones);
-      case 'EXECUTION': return Request.Execute(this._Expression, sessionStorage, additionalZones);
+      case 'EXECUTION':
+
+        const command = this._Expression.match(/^(.*?)(\(.*?\))$/);
+        if (command) eval(command[2]);
+        return Request.Execute(command ? command[1] : this._Expression, sessionStorage, additionalZones);
       case 'COMMAND':
         let resultValue: any = null;
         try {
