@@ -15,6 +15,7 @@ process.on('unhandledRejection', (e) => {
 
   if ('INT' != e) {
     Urusai.Error('Process exited with exception in Promise:', (e as any).toString());
+    console.log(e);
     process.exit(0);
   }
 

@@ -67,7 +67,7 @@ export class JSON extends Delegator {
 
   protected async _PerformResult(scopeZone: any): Promise<boolean> {
 
-    if (!this._JSON.Indicator.Estimate(this.Session, this.FlowZone)) {
+    if (!this._JSON.Indicator.Estimate(this.Session, scopeZone)) {
       Urusai.Warning('Result is not passing indicator exam');
       return false;
     }
