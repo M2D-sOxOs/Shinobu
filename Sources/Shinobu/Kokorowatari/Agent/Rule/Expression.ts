@@ -64,7 +64,7 @@ export class Expression {
       // Execution
       case '#':
         this._Type = 'EXECUTION';
-        this._Expression = this._Expression.substr(1).replace(/\$([A-Za-z_]+)/g, '(additionalZones["$1"] || sessionStorage["$1"])');
+        this._Expression = this._Expression.substr(1).replace(/\$([A-Za-z_]+)/g, '(flowZone["$1"] || sessionStorage["$1"])');
         break;
 
       // Mock
@@ -77,7 +77,7 @@ export class Expression {
       // Execution
       case '>':
         this._Type = 'COMMAND';
-        this._Expression = this._Expression.substr(1).replace(/\$([A-Za-z_]+)/g, '(additionalZones["$1"] || sessionStorage["$1"])');
+        this._Expression = this._Expression.substr(1).replace(/\$([A-Za-z_]+)/g, '(flowZone["$1"] || sessionStorage["$1"])');
         break;
 
       case '\\':
@@ -137,12 +137,12 @@ export class Expression {
   /**
    * A simple method to find by expression
    */
-  private __Find(additionalZones?: any): any | null {
+  private __Find(flowZone?: any): any | null {
 
     // If zone keys exists
     const expressionParts: string[] = this.__ZoneKeys || this._Expression.substr(1).split('.');
 
-    let searchZone: any = this.__Zone || (this.__ZoneName ? additionalZones[this.__ZoneName] : Rule.Platforms);
+    let searchZone: any = this.__Zone || (this.__ZoneName ? flowZone[this.__ZoneName] : Rule.Platforms);
     for (let partIndex = 0; partIndex < expressionParts.length; partIndex++) {
       searchZone = searchZone[expressionParts[partIndex]] || null;
       if (!searchZone) return null;
@@ -161,17 +161,17 @@ export class Expression {
   /**
    * Get Value of Expression
    */
-  public async Value(sessionStorage: any = {}, additionalZones?: any) {
+  public async Value(sessionStorage: any = {}, flowZone?: any) {
 
     switch (this._Type) {
-      case 'DYNAMIC': return this.__Find(additionalZones);
+      case 'DYNAMIC': return this.__Find(flowZone);
       case 'STATIC': return this._Map;
-      case 'MOCK': return this.__Mocker!.Value(sessionStorage, additionalZones);
+      case 'MOCK': return this.__Mocker!.Value(sessionStorage, flowZone);
       case 'EXECUTION':
 
         const command = this._Expression.match(/^(.*?)(\(.*?\))$/);
         if (command) eval(command[2]);
-        return Request.Execute(command ? command[1] : this._Expression, sessionStorage, additionalZones);
+        return await Request.Execute(command ? command[1] : this._Expression, sessionStorage, flowZone);
       case 'COMMAND':
         let resultValue: any = null;
         try {
@@ -182,7 +182,7 @@ export class Expression {
         return resultValue;
       case 'COMPLEX':
         const resultObject: any = this._Map instanceof Array ? [] : {};
-        for (const key in this._Map) resultObject[key] = await this._Map[key].Value(sessionStorage, additionalZones);
+        for (const key in this._Map) resultObject[key] = await this._Map[key].Value(sessionStorage, flowZone);
         return resultObject;
     }
 

@@ -35,11 +35,11 @@ export class Control {
     const proxy: Expression = new Expression('*' + proxyName);
 
     const sessionStorage = { Proxy: await proxy.Value() };
-    const additionalZones = { __IN__: inputData };
-    await Request.Execute(commandName, sessionStorage, additionalZones);
+    const flowZone = { __IN__: inputData };
+    await Request.Execute(commandName, sessionStorage, flowZone);
     Urusai.Verbose('Request executed and completed');
     Urusai.Verbose('Session Storage:', sessionStorage);
-    Urusai.Verbose('Additional Zones:', additionalZones);
+    Urusai.Verbose('Additional Zones:', flowZone);
   }
 
 }

@@ -26,31 +26,28 @@ export class Request {
   public static async Process(dataFrame: Frame): Promise<void> {
 
     Urusai.Verbose('Start processing REQUEST frame')
-    return new Promise(async (s, f) => {
-      const result = await this.__Process(dataFrame.Id!, new Expression(dataFrame.Message), dataFrame.Data);
-      Slave.Send(false === result ? {
+    const result = await this.__Process(dataFrame.Id!, new Expression(dataFrame.Message), dataFrame.Data);
+    Slave.Send(false === result ? {
+      Reply: dataFrame.Id!,
+      Action: 'RESPONSE',
+      Data: {},
+      Message: 'FAILURE'
+    } : {
         Reply: dataFrame.Id!,
         Action: 'RESPONSE',
-        Data: {},
-        Message: 'FAILURE'
-      } : {
-          Reply: dataFrame.Id!,
-          Action: 'RESPONSE',
-          Data: result,
-          Message: 'SUCCESS'
-        });
-      s();
-    })
+        Data: result,
+        Message: 'SUCCESS'
+      });
   }
 
   /**
    * Process with flow
    */
-  private static async __Process(requestId: string, flowExpr: Expression, additionalZones: any, sessionStorage: any = {}): Promise<any> {
+  private static async __Process(requestId: string, flowExpr: Expression, flowZone: any, sessionStorage: any = {}): Promise<any> {
 
     const flowObject: Flow = await flowExpr.Value();
 
-    if (flowObject.Proxy) {
+    if (flowObject.Proxy && (<Proxy>await flowObject.Proxy.Value()).Enabled) {
       const proxy: Proxy = await flowObject.Proxy.Value();
       const socksAgent = new SocksProxyAgent({
         host: proxy.Server,
@@ -64,7 +61,7 @@ export class Request {
 
     let isFailure = 0 == flowObject.Flow.length;
     for (let flowIndex = 0; flowIndex < flowObject.Flow.length; flowIndex++) {
-      if (false === await this.__Execute(flowObject.Flow[flowIndex].Expression ? flowObject.Flow[flowIndex].Expression.replace(/^./, '#') : '#' + flowIndex, await flowObject.Flow[flowIndex].Value(), sessionStorage, additionalZones)) {
+      if (false === await this.__Execute(flowObject.Flow[flowIndex].Expression ? flowObject.Flow[flowIndex].Expression.replace(/^./, '#') : '#' + flowIndex, await flowObject.Flow[flowIndex].Value(), sessionStorage, flowZone)) {
         isFailure = true;
         break;
       }
@@ -72,13 +69,13 @@ export class Request {
 
     if (isFailure) return false;
 
-    return additionalZones['__RESULT__'];
+    return flowZone['__RESULT__'];
   }
 
-  public static async Execute(command: string, sessionStorage: any, additionalZones: any) {
+  public static async Execute(command: string, sessionStorage: any, flowZone: any) {
 
     Urusai.Verbose('Executing command', command);
-    const quickCommandName: string = '#' + command;
+    const quickCommandName: string = '#' + command + global.JSON.stringify(flowZone.__IN__);
     if (quickCommandName in sessionStorage) {
       Urusai.Verbose('Using Quick Command');
       return sessionStorage[quickCommandName];
@@ -87,14 +84,15 @@ export class Request {
     const commandExpression: Expression = new Expression('*' + command);
     const commandObject: Command = await commandExpression.Value();
 
-    return await this.__Execute(quickCommandName, commandObject, sessionStorage, additionalZones);
+    return await this.__Execute(quickCommandName, commandObject, sessionStorage, flowZone);
   }
 
-  private static async __Execute(quickCommandName: string, commandObject: Command, sessionStorage: any, additionalZones: any) {
+  private static async __Execute(quickCommandName: string, commandObject: Command, sessionStorage: any, flowZone: any) {
     let cacheKey = '';
+    let scopeZone: any = {};
     if (commandObject.Cache) {
       Urusai.Verbose('Trying to use cache');
-      cacheKey = (await commandObject.Cache.Key.map(async (v) => await v.Value(sessionStorage, additionalZones))).join(' ');
+      cacheKey = (await commandObject.Cache.Key.map(async (v) => await v.Value(sessionStorage, scopeZone))).join(' ');
       if (Cache.Has(cacheKey)) {
         Urusai.Verbose('Cache hit');
         return Cache.Get(cacheKey);
@@ -109,7 +107,7 @@ export class Request {
     switch (commandObject.Type) {
       case 'JSON':
         Urusai.Verbose('Perform with JSON');
-        if (!await (await (new JSON(commandObject, sessionStorage, additionalZones)).Initialize()).Perform()) {
+        if (!await (await (new JSON(commandObject, sessionStorage, flowZone)).Initialize()).Perform(scopeZone)) {
           Urusai.Warning('Execute command', quickCommandName, 'failed');
           return false;
         }
@@ -117,7 +115,7 @@ export class Request {
       case 'DOMS':
       case 'DOMD':
         Urusai.Verbose('Perform with DOM');
-        if (!await (await (new DOM(commandObject, sessionStorage, additionalZones)).Initialize()).Perform()) {
+        if (!await (await (new DOM(commandObject, sessionStorage, flowZone)).Initialize()).Perform(scopeZone)) {
           Urusai.Warning('Execute command failed');
           return false;
         }
@@ -127,13 +125,13 @@ export class Request {
     if (commandObject.Cache) {
 
       Urusai.Verbose('Result should be cached according to cache policy');
-      const cacheExpire: string = await commandObject.Cache.Expire.Value(sessionStorage, additionalZones);
+      const cacheExpire: string = await commandObject.Cache.Expire.Value(sessionStorage, scopeZone);
       let cacheExpireTime: number = '+' == cacheExpire[0] ? Math.floor((new Date().getTime() / 1000) + parseInt(cacheExpire)) : parseInt(cacheExpire);
-      Cache.Set(cacheKey, additionalZones['__RESULT__'], cacheExpireTime);
+      Cache.Set(cacheKey, flowZone['__RESULT__'], cacheExpireTime);
     }
 
     // Quick Command
-    return (sessionStorage[quickCommandName] = additionalZones['__RESULT__']);
+    return (sessionStorage[quickCommandName] = flowZone['__RESULT__']);
   }
 
   private static async __ExecutePending(cacheKey: string): Promise<void> {

@@ -39,8 +39,8 @@ export class Mock {
     Urusai.Panic('Using unknown mock', Name);
   }
 
-  public Value(sessionStorage: Table<Table<string>>, additionalZones?: any): string {
+  public Value(sessionStorage: Table<Table<string>>, flowZone?: any): string {
     sessionStorage[this.Name] || (sessionStorage[this.Name] = {});
-    return sessionStorage[this.Name][this.Key] || (sessionStorage[this.Name][this.Key] = this.__Mocker.Value(this.Key, sessionStorage, additionalZones));
+    return sessionStorage[this.Name][this.Key] || (sessionStorage[this.Name][this.Key] = this.__Mocker.Value(this.Key, sessionStorage, flowZone));
   }
 }

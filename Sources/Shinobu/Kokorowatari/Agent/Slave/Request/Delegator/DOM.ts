@@ -15,8 +15,8 @@ export class DOM extends Delegator {
 
   private _DOM!: DOMRule;
 
-  constructor(command: Command, session: any, additionalZones: any) {
-    super(command, session, additionalZones);
+  constructor(command: Command, session: any, flowZone: any) {
+    super(command, session, flowZone);
 
   }
 
@@ -28,7 +28,7 @@ export class DOM extends Delegator {
     return this;
   }
 
-  protected async _PerformRequest(): Promise<boolean> {
+  protected async _PerformRequest(scopeZone: any): Promise<boolean> {
 
     let axiosResult!: AxiosResponse;
     try {
@@ -52,7 +52,7 @@ export class DOM extends Delegator {
         httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined
       });
 
-      this.AdditionalZones['__OUT__'] = axiosResult.data;
+      scopeZone['__RESPONSE__'] = axiosResult.data;
       return true;
     } catch (e) {
       Urusai.Error('Error happened when processing request:', this._Request.Method, this._Client.Host + this._Request.URL);
@@ -63,25 +63,25 @@ export class DOM extends Delegator {
     return false;
   }
 
-  protected async _PerformResult(): Promise<boolean> {
+  protected async _PerformResult(scopeZone: any): Promise<boolean> {
 
     switch (this.Command.Type) {
       case 'DOMS':
-        return await this.__PerformResultDOMS();
+        return await this.__PerformResultDOMS(scopeZone);
       case 'DOMD':
         break;
       default: Urusai.Panic('Unexpected command type:', this.Command.Type);
     }
 
-    // this.AdditionalZones['__RESULT__'] = await this.__PerformResultStructure(this._DOM.Result);
+    // this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(this._DOM.Result);
     return true;
   }
 
-  private async __PerformResultDOMS(): Promise<boolean> {
+  private async __PerformResultDOMS(scopeZone: any): Promise<boolean> {
 
-    const domObject: cheerio.Root = load(this.AdditionalZones['__OUT__']);
+    const domObject: cheerio.Root = load(scopeZone['__RESPONSE__']);
 
-    if (!this._DOM.Indicator.Estimate(domObject, this.Session, this.AdditionalZones)) {
+    if (!this._DOM.Indicator.Estimate(domObject, this.Session, scopeZone)) {
       Urusai.Warning('Result is not passing indicator exam');
       return false;
     }
@@ -90,18 +90,18 @@ export class DOM extends Delegator {
      * Perform pre-processors
      */
     this._DOM.Preprocess?.forEach(async (processor) => {
-      await processor.Process(domObject, this.Session, this.AdditionalZones);
+      await processor.Process(domObject, this.Session, scopeZone);
     });
 
-    this.AdditionalZones['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), this.Command.DOM!.Result);
+    this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), scopeZone, this.Command.DOM!.Result);
 
     return true;
   }
 
-  private async __PerformResultStructure(searchElement: cheerio.Cheerio, resultObject?: Result): Promise<any> {
+  private async __PerformResultStructure(searchElement: cheerio.Cheerio, scopeZone: any, resultObject?: Result): Promise<any> {
 
     if (!resultObject) {
-      delete this.AdditionalZones['__RESULT__'];
+      delete this.FlowZone['__RESULT__'];
       return;
     }
 

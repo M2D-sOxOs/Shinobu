@@ -52,7 +52,7 @@ export class Condition {
     }));
   }
 
-  public async Estimate(domAnalyzer: cheerio.Root, strictMode: boolean, sessionStorage?: any, additionalZones?: any): Promise<boolean> {
+  public async Estimate(domAnalyzer: cheerio.Root, strictMode: boolean, sessionStorage?: any, flowZone?: any): Promise<boolean> {
 
     let estimateResult = false;
     for (const pattern of this.Patterns) {
@@ -64,10 +64,10 @@ export class Condition {
         if (strictMode && (!condition.Path || !condition.Selector)) Urusai.Panic("Either Path or Selector should be defined in condition when using strict mode");
 
         // Selector first
-        if (condition.Selector) patternResult = patternResult && await this.__EstimateSelector(condition, domAnalyzer, strictMode, sessionStorage, additionalZones);
+        if (condition.Selector) patternResult = patternResult && await this.__EstimateSelector(condition, domAnalyzer, strictMode, sessionStorage, flowZone);
 
         // No need to perform with Path when in strict mode.
-        if (!strictMode) patternResult = patternResult && await this.__EstimatePath(condition, domAnalyzer, strictMode, sessionStorage, additionalZones);
+        if (!strictMode) patternResult = patternResult && await this.__EstimatePath(condition, domAnalyzer, strictMode, sessionStorage, flowZone);
 
         if (!patternResult) break;
       }
@@ -79,7 +79,7 @@ export class Condition {
     return false;
   }
 
-  private async __EstimatePath(condition: ConditionPattern, domAnalyzer: cheerio.Root, strictMode: boolean, sessionStorage: any, additionalZones: any): Promise<boolean> {
+  private async __EstimatePath(condition: ConditionPattern, domAnalyzer: cheerio.Root, strictMode: boolean, sessionStorage: any, flowZone: any): Promise<boolean> {
 
     const pathParts: string[] = condition.Path!.split('/').filter(v => v);
 
@@ -99,10 +99,10 @@ export class Condition {
     // Nothing to do
     if (!condition.Method) return true;
 
-    return this.__EstimateMethod(condition, targetDOMElement, sessionStorage, additionalZones);
+    return this.__EstimateMethod(condition, targetDOMElement, sessionStorage, flowZone);
   }
 
-  private async __EstimateSelector(condition: ConditionPattern, domAnalyzer: cheerio.Root, strictMode: boolean, sessionStorage: any, additionalZones: any): Promise<boolean> {
+  private async __EstimateSelector(condition: ConditionPattern, domAnalyzer: cheerio.Root, strictMode: boolean, sessionStorage: any, flowZone: any): Promise<boolean> {
 
     const targetDOMElement: cheerio.Cheerio = domAnalyzer(condition.Selector);
 
@@ -126,17 +126,17 @@ export class Condition {
     // Nothing to do
     if (!condition.Method) return true;
 
-    return this.__EstimateMethod(condition, targetDOMElement, sessionStorage, additionalZones);
+    return this.__EstimateMethod(condition, targetDOMElement, sessionStorage, flowZone);
   }
 
-  private async __EstimateMethod(condition: ConditionPattern, targetDOMElement: cheerio.Cheerio, sessionStorage: any, additionalZones: any): Promise<boolean> {
+  private async __EstimateMethod(condition: ConditionPattern, targetDOMElement: cheerio.Cheerio, sessionStorage: any, flowZone: any): Promise<boolean> {
 
     if (!condition.Method || !condition.Symbol || !condition.Expect) Urusai.Panic('Using method in condition but not providing Symbol and Expect is not supported');
     else {
 
       if (!(condition.Method in targetDOMElement)) Urusai.Panic('Unsupported method:', condition.Method);
 
-      const methodResult: any = (targetDOMElement[condition.Method as any] as any)(...condition.Parameters!.map(async (v) => await v.Value(sessionStorage, additionalZones)));
+      const methodResult: any = (targetDOMElement[condition.Method as any] as any)(...condition.Parameters!.map(async (v) => await v.Value(sessionStorage, flowZone)));
 
       switch (condition.Symbol) {
         case 'EQUAL':

@@ -4,7 +4,7 @@ import { Base } from "./Base";
 
 export class UUID extends Base {
 
-  public Value(key: string, sessionStorage: Table<Table<string>>, additionalZones?: any): string {
+  public Value(key: string, sessionStorage: Table<Table<string>>, flowZone?: any): string {
     return v4();
   }
 

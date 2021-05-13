@@ -15,8 +15,8 @@ export class JSON extends Delegator {
 
   private _JSON!: JSONRule;
 
-  constructor(command: Command, session: any, additionalZones: any) {
-    super(command, session, additionalZones);
+  constructor(command: Command, session: any, flowZone: any) {
+    super(command, session, flowZone);
 
   }
 
@@ -28,7 +28,7 @@ export class JSON extends Delegator {
     return this;
   }
 
-  protected async _PerformRequest(): Promise<boolean> {
+  protected async _PerformRequest(scopeZone: any): Promise<boolean> {
 
     let axiosResult!: AxiosResponse;
     try {
@@ -55,55 +55,53 @@ export class JSON extends Delegator {
         httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined
       });
 
-      this.AdditionalZones['__OUT__'] = axiosResult.data;
-      this.AdditionalZones['__STATUS__'] = axiosResult.status;
+      scopeZone['__RESPONSE__'] = axiosResult.data;
+      scopeZone['__STATUS__'] = axiosResult.status;
       return true;
     } catch (e) {
       Urusai.Error('Error happened when processing request:', this._Request.Method, this._Client.Host + this._Request.URL);
       Urusai.Error('Original error message:', e.message);
-      console.log(e)
       return false;
     }
   }
 
-  protected async _PerformResult(): Promise<boolean> {
+  protected async _PerformResult(scopeZone: any): Promise<boolean> {
 
-    if (!this._JSON.Indicator.Estimate(this.Session, this.AdditionalZones)) {
+    if (!this._JSON.Indicator.Estimate(this.Session, this.FlowZone)) {
       Urusai.Warning('Result is not passing indicator exam');
       return false;
     }
 
-    this.AdditionalZones['__RESULT__'] = await this.__PerformResultStructure(this._JSON.Result);
+    this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(scopeZone, this._JSON.Result);
     return true;
   }
-  
-  private async __PerformResultStructure(result?: Result) {
+
+  private async __PerformResultStructure(scopeZone: any, result?: Result) {
 
     if (!result) {
-      delete this.AdditionalZones['__RESULT__'];
+      delete this.FlowZone['__RESULT__'];
       return;
     }
 
     switch (result.Type) {
-      case 'CONCAT': return (await Promise.all((result.Value as Expression[]).map(v => v.Value(this.Session, this.AdditionalZones)))).join('');
+      case 'CONCAT': return (await Promise.all((result.Value as Expression[]).map(v => v.Value(this.Session, scopeZone)))).join('');
       case 'SIMPLE':
-      case 'URL': return await (result.Value as Expression).Value(this.Session, this.AdditionalZones);
+      case 'URL': return await (result.Value as Expression).Value(this.Session, scopeZone);
       case 'ARRAY':
 
         // Map
         if (!result.MapFrom || !result.MapTo) Urusai.Panic('Map is required when type is set to Array');
-        const searchArray: any[] = await result.MapFrom!.Value(this.Session, this.AdditionalZones);
+        const searchArray: any[] = await result.MapFrom!.Value(this.Session, scopeZone);
         if (!searchArray) return [];
         const resultArray: any[] = [];
-        for await (const v of searchArray) {
-          this.AdditionalZones[result.MapTo] = v;
-          resultArray.push(await this.__PerformResultStructure(result.Value as Result));
+        for (const v of searchArray) {
+          scopeZone[result.MapTo] = v;
+          resultArray.push(await this.__PerformResultStructure(scopeZone, result.Value as Result));
         }
-
         return resultArray;
       case 'TABLE':
         const outputObject: any = {};
-        for (const resultKey in result.Value as Table<Result>) outputObject[resultKey] = await this.__PerformResultStructure((result.Value as Table<Result>)[resultKey]);
+        for (const resultKey in result.Value as Table<Result>) outputObject[resultKey] = await this.__PerformResultStructure(scopeZone, (result.Value as Table<Result>)[resultKey]);
         return outputObject;
       case 'NULL':
         return null;

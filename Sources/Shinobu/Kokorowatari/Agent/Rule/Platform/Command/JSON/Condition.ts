@@ -39,7 +39,7 @@ export class Condition {
     }));
   }
 
-  public async Estimate(sessionStorage?: any, additionalZones?: any): Promise<boolean> {
+  public async Estimate(sessionStorage?: any, flowZone?: any): Promise<boolean> {
 
     let estimateResult = false;
     for (const pattern of this.Patterns) {
@@ -49,9 +49,9 @@ export class Condition {
 
         switch (condition.Symbol) {
           case 'EQUAL':
-            patternResult = patternResult && (await condition.Value.Value(sessionStorage, additionalZones)) == (await condition.Expect.Value(sessionStorage, additionalZones));
+            patternResult = patternResult && (await condition.Value.Value(sessionStorage, flowZone)) == (await condition.Expect.Value(sessionStorage, flowZone));
           case 'NOT_EQUAL':
-            patternResult = patternResult && (await condition.Value.Value(sessionStorage, additionalZones)) != (await condition.Expect.Value(sessionStorage, additionalZones));
+            patternResult = patternResult && (await condition.Value.Value(sessionStorage, flowZone)) != (await condition.Expect.Value(sessionStorage, flowZone));
         }
 
         if (!patternResult) break;

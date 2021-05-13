@@ -18,7 +18,7 @@ export class Processor {
   /**
    * Perform processor on dom
    */
-  public async Process(domObject: cheerio.Root, sessionStorage: any, additionalZones: any): Promise<void> {
+  public async Process(domObject: cheerio.Root, sessionStorage: any, flowZone: any): Promise<void> {
 
     Urusai.Verbose('Executing process expression', this.Sections);
     let $$ = domObject.root();
