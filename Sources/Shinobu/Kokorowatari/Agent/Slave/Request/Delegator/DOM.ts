@@ -115,13 +115,13 @@ export class DOM extends Delegator {
         mappedChildren.map(i => mappedArray.push(mappedChildren.eq(i)));
 
         const resultArray: any[] = [];
-        for (const v of mappedArray) resultArray.push(await this.__PerformResultStructure(v, resultObject.Value as Result));
+        for (const v of mappedArray) resultArray.push(await this.__PerformResultStructure(v, scopeZone, resultObject.Value as Result));
 
         return resultArray;
       case 'TABLE':
 
         const outputObject: any = {};
-        for (const resultKey in resultObject.Value as Table<Result>) outputObject[resultKey] = await this.__PerformResultStructure(searchElement, (resultObject.Value as Table<Result>)[resultKey]);
+        for (const resultKey in resultObject.Value as Table<Result>) outputObject[resultKey] = await this.__PerformResultStructure(searchElement, scopeZone, (resultObject.Value as Table<Result>)[resultKey]);
         return outputObject;
     }
 
