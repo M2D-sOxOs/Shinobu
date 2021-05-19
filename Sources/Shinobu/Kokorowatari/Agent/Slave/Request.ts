@@ -92,9 +92,9 @@ export class Request {
     let scopeZone: any = {};
     if (commandObject.Cache) {
       Urusai.Verbose('Trying to use cache');
-      cacheKey = (await commandObject.Cache.Key.map(async (v) => await v.Value(sessionStorage, scopeZone))).join(' ');
+      cacheKey = (await Promise.all(commandObject.Cache.Key.map(async (v) => await v.Value(sessionStorage, scopeZone)))).join(' ');
       if (Cache.Has(cacheKey)) {
-        Urusai.Verbose('Cache hit');
+        Urusai.Verbose('Cache hit with key:', cacheKey);
         return Cache.Get(cacheKey);
       }
       if (cacheKey in this.__Pending) {
