@@ -276,14 +276,20 @@ export class Master {
     const flowObject = this.__Flowing[requestId];
     if (flowObject.Cache) {
 
-      Urusai.Verbose('Result should be cached according to cache policy');
-      let cacheExpire = await flowObject.Cache.Expire.Value();
-      if ('+' == cacheExpire[0]) cacheExpire = new Date().getTime() + cacheExpire;
+      if (0 == status) {
+        
+        Urusai.Verbose('Result should be cached according to cache policy');
+        let cacheExpire = await flowObject.Cache.Expire.Value();
+        if ('+' == cacheExpire[0]) cacheExpire = new Date().getTime() + cacheExpire;
+  
+        let cacheKey = '';
+        for (const key of flowObject.Cache.Key) cacheKey += (await key.Value({}, this.__Additional[requestId])) + '-';
+  
+        Cache.Set(cacheKey, responseData, this.__Expression[requestId], this.__Additional[requestId], cacheExpire, flowObject.Cache.Mode);
+      } else {
+        Urusai.Verbose('Result will not be cached cuz status is not success');
+      }
 
-      let cacheKey = '';
-      for (const key of flowObject.Cache.Key) cacheKey += (await key.Value({}, this.__Additional[requestId])) + '-';
-
-      Cache.Set(cacheKey, responseData, this.__Expression[requestId], this.__Additional[requestId], cacheExpire, flowObject.Cache.Mode);
     }
 
     // End of life
