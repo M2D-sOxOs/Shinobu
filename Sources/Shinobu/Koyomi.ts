@@ -62,7 +62,6 @@ export class Koyomi {
         return;
       }
 
-      Urusai.Notice('Responsed:', r);
       responses.forEach(r => {
         r.writeHead(200, 'Koyomi Success');
         r.end(JSON.stringify(d));
