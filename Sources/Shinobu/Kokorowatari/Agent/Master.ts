@@ -119,7 +119,7 @@ export class Master {
 
   private static async __EventDispatch(agentId: string) {
     if (-1 == this.__Buffers[agentId].indexOf('\n')) {
-      Urusai.Verbose('No enough data to process, maybe already processed all received messages?');
+      Urusai.Error('No enough data to process, maybe already processed all received messages?');
       return;
     }
 
@@ -263,7 +263,6 @@ export class Master {
    */
   public static async __Response(status: number, requestId: string, responseData: any) {
 
-    Urusai.Notice('Responsed:', requestId);
     Urusai.Verbose('Handling response of request', requestId);
     delete this.__Requesting[requestId];
 
