@@ -117,7 +117,7 @@ export class Master {
     })
   }
 
-  private static async __EventDispatch(agentId: string) {
+  private static async __EventDispatch(agentId: string): Promise<void> {
     if (-1 == this.__Buffers[agentId].indexOf('\n')) {
       Urusai.Error('No enough data to process, maybe already processed all received messages?');
       return;
