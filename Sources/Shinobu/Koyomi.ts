@@ -62,6 +62,7 @@ export class Koyomi {
         return;
       }
 
+      Urusai.Notice('Response:', r);
       responses.forEach(r => {
         r.writeHead(200, 'Koyomi Success');
         r.end(JSON.stringify(d));
@@ -106,6 +107,7 @@ export class Koyomi {
         var requestData = JSON.parse(jsonData);
 
         const requestId = await Master.Perform(flowName, requestData);
+        Urusai.Notice('Request:', requestId);
         if (!requestId) {
           Urusai.Error('Cannot create request');
           throw '';
