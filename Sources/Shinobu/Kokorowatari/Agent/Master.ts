@@ -135,7 +135,7 @@ export class Master {
         Urusai.Error('Unsupported action', frameData.Action, 'at this time');
     }
 
-    return this.__EventDispatch(agentId);
+    return await this.__EventDispatch(agentId);
   }
 
   private static async __Run(agentId: string) {
