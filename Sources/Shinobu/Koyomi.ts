@@ -88,12 +88,6 @@ export class Koyomi {
       try {
         const reqHash = createHash('md5').update(flowName + '-' + jsonData).digest().toString('hex');
 
-        p.setTimeout(Jinja.Get('Koyomi.Timeout'), () => {
-          Urusai.Warning('Timeout when processing request');
-          p.writeHead(504, 'Koyomi Timeout');
-          p.end();
-        });
-
         // Already in request
         if (reqHash in this.__HashRequest) {
           Urusai.Verbose('Merged request of', reqHash);
@@ -106,11 +100,21 @@ export class Koyomi {
         var requestData = JSON.parse(jsonData);
 
         const requestId = await Master.Perform(flowName, requestData);
-        Urusai.Notice('Request:', requestId);
         if (!requestId) {
           Urusai.Error('Cannot create request');
           throw '';
         }
+
+        Urusai.Notice('Request:', requestId);
+        
+        p.setTimeout(Jinja.Get('Koyomi.Timeout'), () => {
+          Urusai.Warning('Timeout when processing request');
+          p.writeHead(504, 'Koyomi Timeout');
+          p.end();
+          delete this.__Responses[requestId];
+          delete this.__HashRequest[this.__RequestHash[requestId]];
+          delete this.__RequestHash[requestId];
+        });
 
         if (Jinja.Get('Koyomi.Merge')) {
           this.__HashRequest[reqHash] = requestId;
