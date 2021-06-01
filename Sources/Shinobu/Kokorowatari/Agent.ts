@@ -36,13 +36,13 @@ export class Agent {
     return this.isMaster ? Master.Start() : Slave.Start();
   }
 
-  private static __ID = new Date().getTime();
+  private static __ID = 0;
 
   /**
    * ID
    */
   public static GenerateID(): string {
-    this.__ID += Math.round(Math.random() * 100);
+    this.__ID += Math.round(Math.random() * 1000);
     return this.__ID.toString(36);
   }
 }

@@ -107,6 +107,7 @@ export class Slave {
 
   public static async Send(dataFrame: Frame) {
     dataFrame.Id = Agent.GenerateID();
+    Urusai.Notice('Response:', dataFrame.Reply);
     Urusai.Verbose('Sending', dataFrame.Action, 'frame', dataFrame.Id)
     this.__IPCMaster?.write(JSON.stringify(dataFrame) + '\n');
   }
