@@ -95,6 +95,7 @@ export class Slave {
         Control.Process(frameData);
         break;
       case 'REQUEST':
+        Urusai.Notice('Requested:', frameData.Id);
         Request.Process(frameData);
         break;
       default:
