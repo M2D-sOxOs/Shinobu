@@ -141,7 +141,7 @@ export class Master {
 
     Urusai.Verbose('Running agent:', agentId)
 
-    this.Processes[agentId] = spawn('electron', ['--no-sandbox', require.main?.filename!], {
+    this.Processes[agentId] = spawn(process.argv0, ['--no-sandbox', require.main?.filename!], {
       env: Object.assign({ 'Mark-Slave': 1, 'IPCName': this.IPCName, 'IPCId': agentId }, process.env),
       stdio: ['pipe', 'pipe', 'pipe']
     });
