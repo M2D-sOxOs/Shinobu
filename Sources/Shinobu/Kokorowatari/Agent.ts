@@ -42,6 +42,7 @@ export class Agent {
    * ID
    */
   public static GenerateID(): string {
-    return (this.__ID++).toString(36);
+    this.__ID += Math.round(Math.random() * 100);
+    return this.__ID.toString(36);
   }
 }
