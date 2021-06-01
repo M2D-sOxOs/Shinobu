@@ -42,8 +42,12 @@ export class Koyomi {
 
   private static async __Callback() {
     Master.Callback((s, r, d) => {
+      Urusai.Verbose('Kokomi Callback received.')
 
-      if (!(r in this.__Responses)) return;
+      if (!(r in this.__Responses)) {
+        Urusai.Error('Response not found, this may be a bug', r);
+        return;
+      }
 
       const responses = this.__Responses[r];
       delete this.__Responses[r];
@@ -66,11 +70,11 @@ export class Koyomi {
   }
 
   private static async __Server() {
-    createServer(async (q, p) => await this.__Process(q, p)).listen(Jinja.Get('Koyomi.Port'));
+    createServer((q, p) => this.__Process(q, p)).listen(Jinja.Get('Koyomi.Port'));
     Urusai.Verbose('Koyomi here, Serve you at http://127.0.0.1:' + Jinja.Get('Koyomi.Port'));
   }
 
-  private static async __Process(q: IncomingMessage, p: ServerResponse) {
+  private static __Process(q: IncomingMessage, p: ServerResponse) {
 
     var jsonData = "";
     q.on('data', (chunk) => jsonData += chunk);
@@ -112,7 +116,7 @@ export class Koyomi {
           this.__RequestHash[requestId] = reqHash;
         }
         this.__Responses[requestId] = [p];
-      } catch(e) {
+      } catch (e) {
         console.log(e);
         Urusai.Error('Something went wrong when processing request');
         p.end();

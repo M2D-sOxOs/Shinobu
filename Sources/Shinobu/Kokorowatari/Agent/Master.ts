@@ -297,6 +297,8 @@ export class Master {
     delete this.__Flowing[requestId];
     delete this.__Expression[requestId];
 
+    // 
+    Urusai.Verbose('Sending response to Callback: ', this.__CALLBACKS.length);
     this.__CALLBACKS.forEach(v => v(status, requestId, responseData));
   }
 
