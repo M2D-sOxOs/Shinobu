@@ -45,6 +45,7 @@ export class Request {
    */
   private static async __Process(requestId: string, flowExpr: Expression, flowZone: any, sessionStorage: any = {}): Promise<any> {
 
+    Urusai.Notice('Response:', requestId);
     const flowObject: Flow = await flowExpr.Value();
 
     if (flowObject.Proxy && (<Proxy>await flowObject.Proxy.Value()).Enabled) {
