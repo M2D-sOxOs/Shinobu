@@ -6,30 +6,33 @@ import { Request, RequestConfig } from "../Platform/Command/Request";
 import { Expression } from "../../Rule/Expression";
 import { Cache, CacheConfig } from "./Command/Cache";
 import { DOM, DOMConfig } from "./Command/DOM";
+import { INSET, INSETConfig } from "./Command/INSET";
 
 export type CommandConfig = {
-  Client: ClientConfig | string,
+  Client?: ClientConfig | string,
   Cache?: CacheConfig,
-  Request: RequestConfig,
-  Type: 'JSON' | 'DOMD' | 'DOMS',
+  Request?: RequestConfig,
+  Type: 'JSON' | 'DOMD' | 'DOMS' | 'INSET',
   JSON?: JSONConfig,
   DOM?: DOMConfig,
+  INSET?: INSETConfig,
 }
 
 export class Command {
 
-  public readonly Client: Expression;
+  public readonly Client?: Expression;
   public readonly Cache?: Cache;
-  public readonly Request: Request;
-  public readonly Type: 'JSON' | 'DOMD' | 'DOMS';
+  public readonly Request?: Request;
+  public readonly Type: 'JSON' | 'DOMD' | 'DOMS' | 'INSET';
   public readonly JSON?: JSON;
   public readonly DOM?: DOM;
+  public readonly INSET?: INSET;
 
   constructor(commandConfig: CommandConfig) {
-    this.Client = new Expression('string' == typeof commandConfig.Client ? commandConfig.Client : new Client(commandConfig.Client));
+    if (commandConfig.Client) this.Client = new Expression('string' == typeof commandConfig.Client ? commandConfig.Client : new Client(commandConfig.Client));
 
     if (commandConfig.Cache) this.Cache = new Cache(commandConfig.Cache);
-    this.Request = new Request(commandConfig.Request);
+    if (commandConfig.Request) this.Request = new Request(commandConfig.Request);
     this.Type = commandConfig.Type;
 
     switch (this.Type) {
@@ -40,7 +43,8 @@ export class Command {
       case 'DOMD':
         this.DOM = new DOM(commandConfig.DOM!);
         break;
-      default: Urusai.Panic('Unsupported command type', this.Type);
+      case 'INSET':
+        this.INSET = new INSET(commandConfig.INSET!);
     }
   }
 }

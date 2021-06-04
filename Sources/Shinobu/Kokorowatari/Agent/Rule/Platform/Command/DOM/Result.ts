@@ -1,14 +1,14 @@
 import { Table } from "../../../../Rule";
 
 export type ResultConfig = {
-  Type: 'SIMPLE' | 'TABLE' | 'ARRAY',
+  Type: 'SIMPLE' | 'TABLE' | 'ARRAY' | 'COMBINED',
   Map?: string,
   Value: string | ResultConfig | Table<ResultConfig>
 }
 
 export class Result {
 
-  public readonly Type: 'SIMPLE' | 'TABLE' | 'ARRAY';
+  public readonly Type: 'SIMPLE' | 'TABLE' | 'ARRAY' | 'COMBINED';
   public readonly Map?: string;
   public readonly Value: string | Result | Table<Result>;
 
@@ -18,6 +18,7 @@ export class Result {
 
     switch (this.Type) {
       case 'SIMPLE':
+      case 'COMBINED':
         this.Value = resultConfig.Value as string;
         break;
       case 'TABLE':

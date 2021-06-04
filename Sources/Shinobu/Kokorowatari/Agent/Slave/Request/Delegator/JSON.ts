@@ -25,32 +25,36 @@ export class JSON extends Delegator {
     await super.Initialize();
 
     this._JSON = this.Command.JSON!;
+
+    if (!this._Client || !this._Request) Urusai.Panic('Client / Request is required in JSON.');
+
     return this;
   }
 
   protected async _PerformRequest(scopeZone: any): Promise<boolean> {
 
     let axiosResult!: AxiosResponse;
+    const requestUrl = this._Client!.Host + (await this._Request!.URL.Value(this.Session, scopeZone));
     try {
 
-      const inflatedHeaders = Object.assign({}, await this._Inflate(this._Client.Headers), await this._Inflate(this._Request.Headers));
+      const inflatedHeaders = Object.assign({}, await this._Inflate(this._Client!.Headers), await this._Inflate(this._Request!.Headers));
       Urusai.Verbose('Request headers:', inflatedHeaders);
-      const inflatedParameters = await this._Inflate(this._Request.Parameters);
+      const inflatedParameters = await this._Inflate(this._Request!.Parameters);
       Urusai.Verbose('Request parameters:', inflatedParameters);
-      const inflatedFormFields = await this._Inflate(this._Request.Forms);
+      const inflatedFormFields = await this._Inflate(this._Request!.Forms);
       Urusai.Verbose('Request forms:', inflatedFormFields);
 
-      Urusai.Verbose('Performing request:', this._Request.Method, this._Client.Host + this._Request.URL);
+      Urusai.Verbose('Performing request:', requestUrl);
       Urusai.Verbose('URL Parameters:', inflatedParameters);
       Urusai.Verbose('Form fields:', inflatedFormFields);
 
       axiosResult = await Axios({
-        url: this._Client.Host + this._Request.URL,
-        method: this._Request.Method,
+        url: requestUrl,
+        method: this._Request!.Method,
         headers: inflatedHeaders,
         params: inflatedParameters,
-        data: 'application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : global.JSON.stringify(inflatedFormFields),
-        timeout: this._Request.Timeout,
+        data: 'GET' == this._Request!.Method ? undefined : ('application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : global.JSON.stringify(inflatedFormFields)),
+        timeout: this._Request!.Timeout,
         httpAgent: this.Session.Proxy ? this.Session.Proxy.httpAgent : undefined,
         httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined
       });
@@ -59,7 +63,7 @@ export class JSON extends Delegator {
       scopeZone['__STATUS__'] = axiosResult.status;
       return true;
     } catch (e) {
-      Urusai.Error('Error happened when processing request:', this._Request.Method, this._Client.Host + this._Request.URL);
+      Urusai.Error('Error happened when processing request:', this._Request!.Method, requestUrl);
       Urusai.Error('Original error message:', e.message);
       return false;
     }

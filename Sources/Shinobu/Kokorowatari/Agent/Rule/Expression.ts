@@ -75,7 +75,7 @@ export class Expression {
         break;
 
       // Execution
-      case '>':
+      case '=':
         this._Type = 'COMMAND';
         this._Expression = this._Expression.substr(1).replace(/\$([A-Za-z_]+)/g, '(flowZone["$1"] || sessionStorage["$1"])');
         break;

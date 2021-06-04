@@ -14,8 +14,8 @@ export abstract class Delegator {
   /**
    * Client config
    */
-  protected _Client!: Client;
-  protected _Request!: Request;
+  protected _Client?: Client;
+  protected _Request?: Request;
 
   constructor(public readonly Command: Command, public readonly Session: any, public readonly FlowZone: any) {
 
@@ -23,7 +23,7 @@ export abstract class Delegator {
 
   public async Initialize(): Promise<Delegator> {
 
-    this._Client = await this.Command.Client.Value();
+    this._Client = await this.Command.Client?.Value();
     this._Request = this.Command.Request;
     return this;
   }
@@ -41,7 +41,7 @@ export abstract class Delegator {
     } catch (e) {
       console.log(e);
       Urusai.Error('Something goes wrong when processing, Maybe the source data structure changed?');
-      Urusai.Error('Error request:', (await this.Command.Client.Value()).Host + this.Command.Request.URL);
+      Urusai.Error('Error request:', (await this.Command.Client?.Value()).Host + this.Command.Request?.URL);
       return false;
     }
   }

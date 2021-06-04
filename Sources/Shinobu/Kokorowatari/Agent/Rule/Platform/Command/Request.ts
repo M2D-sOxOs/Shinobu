@@ -13,7 +13,7 @@ export type RequestConfig = {
 export class Request {
 
   public readonly Method: 'GET' | 'POST';
-  public readonly URL: string;
+  public readonly URL: Expression;
   public readonly Timeout: number;
   public readonly Headers: Table<Expression> = {};
   public readonly Parameters: Table<Expression> = {};
@@ -22,7 +22,7 @@ export class Request {
   constructor(requestConfig: RequestConfig) {
 
     this.Method = requestConfig.Method;
-    this.URL = requestConfig.URL;
+    this.URL = new Expression(requestConfig.URL);
     this.Timeout = requestConfig.Timeout;
 
     if (requestConfig.Headers) for (const headerKey in requestConfig.Headers) this.Headers[headerKey] = new Expression(requestConfig.Headers[headerKey]);

@@ -12,6 +12,8 @@ import { Command } from "../Rule/Platform/Command";
 import { Flow } from "../Rule/Platform/Flow";
 import { Proxy } from "../Rule/Platform/Proxy";
 import { SocksProxyAgent } from "socks-proxy-agent";
+import { httpOverHttp, httpsOverHttp } from "tunnel";
+import { INSET } from "./Request/Delegator/INSET";
 
 /**
  * All things moving on Request
@@ -48,15 +50,28 @@ export class Request {
     const flowObject: Flow = await flowExpr.Value();
 
     if (flowObject.Proxy && (<Proxy>await flowObject.Proxy.Value()).Enabled) {
+
       const proxy: Proxy = await flowObject.Proxy.Value();
-      const socksAgent = new SocksProxyAgent({
-        host: proxy.Server,
-        port: proxy.Port
-      });
-      sessionStorage.Proxy = {
-        httpAgent: socksAgent,
-        httpsAgent: socksAgent
-      };
+      switch (proxy.Provider) {
+        case 'SOCKS5':
+          sessionStorage.Proxy = {
+            httpAgent: new SocksProxyAgent({
+              host: proxy.Server,
+              port: proxy.Port
+            }),
+            httpsAgent: new SocksProxyAgent({
+              host: proxy.Server,
+              port: proxy.Port
+            })
+          };
+          break;
+        case 'HTTP':
+          sessionStorage.Proxy = {
+            httpAgent: httpOverHttp({ proxy: { host: proxy.Server, port: proxy.Port } }),
+            httpsAgent: httpsOverHttp({ proxy: { host: proxy.Server, port: proxy.Port } })
+          };
+          break;
+      }
     }
 
     let isFailure = 0 == flowObject.Flow.length;
@@ -117,6 +132,13 @@ export class Request {
         Urusai.Verbose('Perform with DOM');
         if (!await (await (new DOM(commandObject, sessionStorage, flowZone)).Initialize()).Perform(scopeZone)) {
           Urusai.Warning('Execute command failed');
+          return false;
+        }
+        break;
+      case 'INSET':
+        Urusai.Verbose('Perform with INSET');
+        if (!await (await (new INSET(commandObject, sessionStorage, flowZone)).Initialize()).Perform(scopeZone)) {
+          Urusai.Warning('Execute command', quickCommandName, 'failed');
           return false;
         }
         break;

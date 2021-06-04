@@ -25,29 +25,31 @@ export class DOM extends Delegator {
     await super.Initialize();
 
     this._DOM = this.Command.DOM!;
+    if (!this._Client || !this._Request) Urusai.Panic('Client / Request is required in DOM.');
     return this;
   }
 
   protected async _PerformRequest(scopeZone: any): Promise<boolean> {
 
     let axiosResult!: AxiosResponse;
+    const requestUrl = this._Client!.Host + (await this._Request!.URL.Value(this.Session, scopeZone));
     try {
 
-      const inflatedHeaders = await this._Inflate(this._Client.Headers);
-      const inflatedParameters = await this._Inflate(this._Request.Parameters);
-      const inflatedFormFields = await this._Inflate(this._Request.Forms);
+      const inflatedHeaders = await this._Inflate(this._Client!.Headers);
+      const inflatedParameters = await this._Inflate(this._Request!.Parameters);
+      const inflatedFormFields = await this._Inflate(this._Request!.Forms);
 
-      Urusai.Verbose('Performing request:', this._Request.Method, this._Client.Host + this._Request.URL);
+      Urusai.Verbose('Performing request:', requestUrl);
       Urusai.Verbose('URL Parameters:', inflatedParameters);
       Urusai.Verbose('Form fields:', inflatedFormFields);
 
       axiosResult = await Axios({
-        url: this._Client.Host + this._Request.URL,
-        method: this._Request.Method,
+        url: requestUrl,
+        method: this._Request!.Method,
         headers: inflatedHeaders,
         params: inflatedParameters,
-        data: 'application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : inflatedFormFields,
-        timeout: this._Request.Timeout,
+        data: 'GET' == this._Request!.Method ? undefined : ('application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : inflatedFormFields),
+        timeout: this._Request!.Timeout,
         httpAgent: this.Session.Proxy ? this.Session.Proxy.httpAgent : undefined,
         httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined
       });
@@ -55,7 +57,7 @@ export class DOM extends Delegator {
       scopeZone['__RESPONSE__'] = axiosResult.data;
       return true;
     } catch (e) {
-      Urusai.Error('Error happened when processing request:', this._Request.Method, this._Client.Host + this._Request.URL);
+      Urusai.Error('Error happened when processing request:', this._Request!.Method, requestUrl);
       Urusai.Error('Original error message:', e.message);
       return false;
     }
@@ -108,6 +110,8 @@ export class DOM extends Delegator {
     switch (resultObject.Type) {
       case 'SIMPLE':
         return await this.__PerformResultStructureValue(resultObject.Value as string, searchElement);
+      case 'COMBINED':
+        return await this.__PerformResultStructureValues(resultObject.Value as string, searchElement);
       case 'ARRAY':
 
         const mappedChildren: cheerio.Cheerio = await this.__PerformResultStructureValue(resultObject.Map!, searchElement);
@@ -134,6 +138,17 @@ export class DOM extends Delegator {
     if (domRExps[0]) searchElement = searchElement.find(domRExps[0]);
 
     return domRExps[1] ? eval(`searchElement.${domRExps[1]}`) : searchElement;
+  }
+
+  private async __PerformResultStructureValues(domRExp: string, searchElement: cheerio.Cheerio) {
+
+    const domRexpArray = domRExp.split('+');
+    const resultArray = await Promise.all(domRexpArray.map(v => {
+      const matchedResult = v.trim().match(/^(["'])([^\1]*?)\1$/);
+      if (matchedResult) return matchedResult[2];
+      return this.__PerformResultStructureValue(v, searchElement);
+    }));
+    return resultArray.join('')
   }
 
 }
