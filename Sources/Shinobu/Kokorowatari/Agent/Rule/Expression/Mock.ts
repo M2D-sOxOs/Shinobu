@@ -3,6 +3,7 @@ import { Table } from "../../Rule";
 import { Base } from "./Mock/Base";
 import { UUID } from "./Mock/UUID";
 import { RakutenPage } from "./Mock/RakutenPage";
+import { RakutenPaged } from "./Mock/RakutenPaged";
 import { RakutenSort } from "./Mock/RakutenSort";
 import { RakutenCondition } from "./Mock/RakutenCondition";
 import { RakutenFilters } from "./Mock/RakutenFilters";
@@ -25,6 +26,9 @@ export class Mock {
         return;
       case '@RakutenPage':
         this.__Mocker = new RakutenPage();
+        return;
+      case '@RakutenPaged':
+        this.__Mocker = new RakutenPaged();
         return;
       case '@RakutenSort':
         this.__Mocker = new RakutenSort();

@@ -76,7 +76,8 @@ export class JSON extends Delegator {
       return false;
     }
 
-    this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(scopeZone, this._JSON.Result);
+    scopeZone['__RESULT__'] = (this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(scopeZone, this._JSON.Result));
+    if (this._JSON.Postprocess) return await this._JSON.Postprocess.Value(this.Session, scopeZone);
     return true;
   }
 
