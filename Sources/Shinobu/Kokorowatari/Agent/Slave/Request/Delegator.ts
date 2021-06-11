@@ -58,6 +58,8 @@ export abstract class Delegator {
         Urusai.Error('Cannot get value of expression for the field:', key);
         throw new Error('Cannot get value of expression for the field: ' + key);
       }
+
+      if (null === inflatedTable[key]) delete inflatedTable[key];
     }
     return inflatedTable;
 
