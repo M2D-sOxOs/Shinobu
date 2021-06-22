@@ -7,6 +7,7 @@ import { RakutenPaged } from "./Mock/RakutenPaged";
 import { RakutenSort } from "./Mock/RakutenSort";
 import { RakutenCondition } from "./Mock/RakutenCondition";
 import { RakutenFilters } from "./Mock/RakutenFilters";
+import { BoothSort } from "./Mock/BoothSort";
 
 export class Mock {
 
@@ -38,6 +39,10 @@ export class Mock {
         return;
       case '@RakutenFilters':
         this.__Mocker = new RakutenFilters();
+        return;
+
+      case '@BoothSort':
+        this.__Mocker = new BoothSort();
         return;
     }
     Urusai.Panic('Using unknown mock', Name);

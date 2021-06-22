@@ -110,6 +110,8 @@ export class DOM extends Delegator {
     switch (resultObject.Type) {
       case 'SIMPLE':
         return await this.__PerformResultStructureValue(resultObject.Value as string, searchElement);
+      case 'NULL':
+        return null;
       case 'COMBINED':
         return await this.__PerformResultStructureValues(resultObject.Value as string, searchElement);
       case 'ARRAY':

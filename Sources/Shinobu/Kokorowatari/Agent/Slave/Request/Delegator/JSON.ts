@@ -112,7 +112,7 @@ export class JSON extends Delegator {
         return null;
     }
 
-    Urusai.Panic('Unknown type of Result, Check your configuration file');
+    Urusai.Panic(`Unknown type of Result ${result.Type}, Check your configuration file`);
   }
 
 }

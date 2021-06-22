@@ -41,7 +41,7 @@ export abstract class Delegator {
     } catch (e) {
       console.log(e);
       Urusai.Error('Something goes wrong when processing, Maybe the source data structure changed?');
-      Urusai.Error('Error request:', (await this.Command.Client?.Value()).Host + this.Command.Request?.URL);
+      Urusai.Error('Error request:', (await this.Command.Client?.Value()).Host + await this.Command.Request?.URL.Value());
       return false;
     }
   }
