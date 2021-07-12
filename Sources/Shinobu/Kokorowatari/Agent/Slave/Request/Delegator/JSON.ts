@@ -10,6 +10,8 @@ import { JSON as JSONRule } from "../../../Rule/Platform/Command/JSON";
 import { Result } from "../../../Rule/Platform/Command/JSON/Result";
 import { Proxy } from "../../../Rule/Platform/Proxy";
 import { Delegator } from "../Delegator";
+//@ts-ignore
+import * as encoding from "encoding";
 
 export class JSON extends Delegator {
 
@@ -48,6 +50,8 @@ export class JSON extends Delegator {
       Urusai.Verbose('URL Parameters:', inflatedParameters);
       Urusai.Verbose('Form fields:', inflatedFormFields);
 
+      scopeZone['__REQUEST_HEADERS__'] = inflatedHeaders;
+
       axiosResult = await Axios({
         url: requestUrl,
         method: this._Request!.Method,
@@ -56,9 +60,17 @@ export class JSON extends Delegator {
         data: 'GET' == this._Request!.Method ? undefined : ('application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : global.JSON.stringify(inflatedFormFields)),
         timeout: this._Request!.Timeout,
         httpAgent: this.Session.Proxy ? this.Session.Proxy.httpAgent : undefined,
-        httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined
+        httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined,
+        maxRedirects: 0,
+        validateStatus: (status: number) => {
+          return status >= 200 && status < 400; // default
+        },
+        transformResponse: (rawData: any) => {
+          return global.JSON.parse(this._Request?.Encoding ? encoding.convert(rawData, 'utf8', this._Request?.Encoding) : rawData)
+        }
       });
 
+      scopeZone['__RESPONSE_HEADERS__'] = axiosResult.headers;
       scopeZone['__RESPONSE__'] = axiosResult.data;
       scopeZone['__STATUS__'] = axiosResult.status;
       return true;

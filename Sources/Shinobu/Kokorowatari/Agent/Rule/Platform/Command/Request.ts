@@ -7,7 +7,8 @@ export type RequestConfig = {
   Timeout: number,
   Headers: Table<string>,
   Parameters: Table<string>,
-  Forms: Table<string>
+  Forms: Table<string>,
+  Encoding?: string
 }
 
 export class Request {
@@ -18,6 +19,7 @@ export class Request {
   public readonly Headers: Table<Expression> = {};
   public readonly Parameters: Table<Expression> = {};
   public readonly Forms: Table<Expression> = {};
+  public readonly Encoding?: string;
 
   constructor(requestConfig: RequestConfig) {
 
@@ -28,5 +30,6 @@ export class Request {
     if (requestConfig.Headers) for (const headerKey in requestConfig.Headers) this.Headers[headerKey] = new Expression(requestConfig.Headers[headerKey]);
     if (requestConfig.Parameters) for (const parameterKey in requestConfig.Parameters) this.Parameters[parameterKey] = new Expression(requestConfig.Parameters[parameterKey]);
     if (requestConfig.Forms) for (const formKey in requestConfig.Forms) this.Forms[formKey] = new Expression(requestConfig.Forms[formKey]);
+    if (requestConfig.Encoding) this.Encoding = requestConfig.Encoding;
   }
 }

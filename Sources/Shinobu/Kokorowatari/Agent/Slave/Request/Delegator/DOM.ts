@@ -10,6 +10,8 @@ import { DOM as DOMRule } from "../../../Rule/Platform/Command/DOM";
 import { Result } from "../../../Rule/Platform/Command/DOM/Result";
 import { Proxy } from "../../../Rule/Platform/Proxy";
 import { Delegator } from "../Delegator";
+//@ts-ignore
+import * as encoding from "encoding";
 
 export class DOM extends Delegator {
 
@@ -34,10 +36,13 @@ export class DOM extends Delegator {
     let axiosResult!: AxiosResponse;
     const requestUrl = this._Client!.Host + (await this._Request!.URL.Value(this.Session, scopeZone));
     try {
-
-      const inflatedHeaders = await this._Inflate(this._Client!.Headers);
+      
+      const inflatedHeaders = Object.assign({}, await this._Inflate(this._Client!.Headers), await this._Inflate(this._Request!.Headers));
+      Urusai.Verbose('Request headers:', inflatedHeaders);
       const inflatedParameters = await this._Inflate(this._Request!.Parameters);
+      Urusai.Verbose('Request parameters:', inflatedParameters);
       const inflatedFormFields = await this._Inflate(this._Request!.Forms);
+      Urusai.Verbose('Request forms:', inflatedFormFields);
 
       Urusai.Verbose('Performing request:', requestUrl);
       Urusai.Verbose('URL Parameters:', inflatedParameters);
@@ -51,7 +56,14 @@ export class DOM extends Delegator {
         data: 'GET' == this._Request!.Method ? undefined : ('application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : inflatedFormFields),
         timeout: this._Request!.Timeout,
         httpAgent: this.Session.Proxy ? this.Session.Proxy.httpAgent : undefined,
-        httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined
+        httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined,
+        maxRedirects: 0,
+        validateStatus: (status: number) => {
+          return status >= 200 && status < 400; // default
+        },
+        transformResponse: (rawData: any) => {
+          return global.JSON.parse(this._Request?.Encoding ? encoding.convert(rawData, 'utf8', this._Request?.Encoding) : rawData)
+        }
       });
 
       scopeZone['__RESPONSE__'] = axiosResult.data;

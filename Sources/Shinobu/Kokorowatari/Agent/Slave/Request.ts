@@ -89,7 +89,6 @@ export class Request {
 
   public static async Execute(command: string, sessionStorage: any, flowZone: any) {
 
-    Urusai.Verbose('Executing command', command);
     const quickCommandName: string = '#' + command + global.JSON.stringify(flowZone.__IN__);
     if (quickCommandName in sessionStorage) {
       Urusai.Verbose('Using Quick Command');
@@ -103,6 +102,7 @@ export class Request {
   }
 
   private static async __Execute(quickCommandName: string, commandObject: Command, sessionStorage: any, flowZone: any) {
+    Urusai.Verbose('Executing command', quickCommandName);
     let cacheKey = '';
     let scopeZone: any = {};
     if (commandObject.Cache) {
