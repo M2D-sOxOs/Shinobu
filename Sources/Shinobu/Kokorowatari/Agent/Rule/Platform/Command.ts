@@ -7,12 +7,14 @@ import { Expression } from "../../Rule/Expression";
 import { Cache, CacheConfig } from "./Command/Cache";
 import { DOM, DOMConfig } from "./Command/DOM";
 import { INSET, INSETConfig } from "./Command/INSET";
+import { HEAD, HEADConfig } from "./Command/HEAD";
 
 export type CommandConfig = {
   Client?: ClientConfig | string,
   Cache?: CacheConfig,
   Request?: RequestConfig,
-  Type: 'JSON' | 'DOMD' | 'DOMS' | 'INSET',
+  Type: 'JSON' | 'HEAD' | 'DOMD' | 'DOMS' | 'INSET',
+  HEAD?: HEADConfig,
   JSON?: JSONConfig,
   DOM?: DOMConfig,
   INSET?: INSETConfig,
@@ -23,7 +25,8 @@ export class Command {
   public readonly Client?: Expression;
   public readonly Cache?: Cache;
   public readonly Request?: Request;
-  public readonly Type: 'JSON' | 'DOMD' | 'DOMS' | 'INSET';
+  public readonly Type: 'JSON' | 'HEAD' | 'DOMD' | 'DOMS' | 'INSET';
+  public readonly HEAD?: HEAD;
   public readonly JSON?: JSON;
   public readonly DOM?: DOM;
   public readonly INSET?: INSET;
@@ -38,6 +41,9 @@ export class Command {
     switch (this.Type) {
       case 'JSON':
         this.JSON = new JSON(commandConfig.JSON!);
+        break;
+      case 'HEAD':
+        this.HEAD = new HEAD(commandConfig.HEAD!);
         break;
       case 'DOMS':
       case 'DOMD':

@@ -6,6 +6,7 @@ import { Slave } from "../Slave";
 import { Cache } from "./Cache";
 import { DOM } from "./Request/Delegator/DOM";
 import { JSON } from "./Request/Delegator/JSON";
+import { HEAD } from "./Request/Delegator/HEAD";
 import { Rule, Table } from "../Rule";
 import { Expression } from "../Rule/Expression";
 import { Command } from "../Rule/Platform/Command";
@@ -35,11 +36,11 @@ export class Request {
       Data: {},
       Message: 'FAILURE'
     } : {
-        Reply: dataFrame.Id!,
-        Action: 'RESPONSE',
-        Data: result,
-        Message: 'SUCCESS'
-      });
+      Reply: dataFrame.Id!,
+      Action: 'RESPONSE',
+      Data: result,
+      Message: 'SUCCESS'
+    });
   }
 
   /**
@@ -123,6 +124,13 @@ export class Request {
       case 'JSON':
         Urusai.Verbose('Perform with JSON');
         if (!await (await (new JSON(commandObject, sessionStorage, flowZone)).Initialize()).Perform(scopeZone)) {
+          Urusai.Warning('Execute command', quickCommandName, 'failed');
+          return false;
+        }
+        break;
+      case 'HEAD':
+        Urusai.Verbose('Perform with HEAD');
+        if (!await (await (new HEAD(commandObject, sessionStorage, flowZone)).Initialize()).Perform(scopeZone)) {
           Urusai.Warning('Execute command', quickCommandName, 'failed');
           return false;
         }

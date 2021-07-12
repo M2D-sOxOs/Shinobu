@@ -36,7 +36,7 @@ export class DOM extends Delegator {
     let axiosResult!: AxiosResponse;
     const requestUrl = this._Client!.Host + (await this._Request!.URL.Value(this.Session, scopeZone));
     try {
-      
+
       const inflatedHeaders = Object.assign({}, await this._Inflate(this._Client!.Headers), await this._Inflate(this._Request!.Headers));
       Urusai.Verbose('Request headers:', inflatedHeaders);
       const inflatedParameters = await this._Inflate(this._Request!.Parameters);
@@ -59,10 +59,10 @@ export class DOM extends Delegator {
         httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined,
         maxRedirects: 0,
         validateStatus: (status: number) => {
-          return status >= 200 && status < 400; // default
+          return status >= 200 && status < 400;
         },
         transformResponse: (rawData: any) => {
-          return global.JSON.parse(this._Request?.Encoding ? encoding.convert(rawData, 'utf8', this._Request?.Encoding) : rawData)
+          return this._Request?.Encoding ? encoding.convert(rawData, 'utf8', this._Request?.Encoding) : rawData
         }
       });
 

@@ -6,29 +6,29 @@ import { Urusai } from "../../../../../../Common/Urusai/Urusai";
 import { Table } from "../../../Rule";
 import { Expression } from "../../../Rule/Expression";
 import { Command } from "../../../Rule/Platform/Command";
-import { JSON as JSONRule } from "../../../Rule/Platform/Command/JSON";
-import { Result } from "../../../Rule/Platform/Command/JSON/Result";
+import { HEAD as HEADRule } from "../../../Rule/Platform/Command/HEAD";
+import { Result } from "../../../Rule/Platform/Command/HEAD/Result";
 import { Proxy } from "../../../Rule/Platform/Proxy";
 import { Delegator } from "../Delegator";
 //@ts-ignore
 import * as encoding from "encoding";
 
-export class JSON extends Delegator {
+export class HEAD extends Delegator {
 
-  private _JSON!: JSONRule;
+  private _HEAD!: HEADRule;
 
   constructor(command: Command, session: any, flowZone: any) {
     super(command, session, flowZone);
 
   }
 
-  public async Initialize(): Promise<JSON> {
+  public async Initialize(): Promise<HEAD> {
 
     await super.Initialize();
 
-    this._JSON = this.Command.JSON!;
+    this._HEAD = this.Command.HEAD!;
 
-    if (!this._Client || !this._Request) Urusai.Panic('Client / Request is required in JSON.');
+    if (!this._Client || !this._Request) Urusai.Panic('Client / Request is required in HEAD.');
 
     return this;
   }
@@ -66,12 +66,11 @@ export class JSON extends Delegator {
           return status >= 200 && status < 400;
         },
         transformResponse: (rawData: any) => {
-          return global.JSON.parse(this._Request?.Encoding ? encoding.convert(rawData, 'utf8', this._Request?.Encoding) : rawData)
+          return rawData;
         }
       });
 
       scopeZone['__RESPONSE_HEADERS__'] = axiosResult.headers;
-      scopeZone['__RESPONSE__'] = axiosResult.data;
       scopeZone['__STATUS__'] = axiosResult.status;
       return true;
     } catch (e) {
@@ -83,13 +82,13 @@ export class JSON extends Delegator {
 
   protected async _PerformResult(scopeZone: any): Promise<boolean> {
 
-    if (!this._JSON.Indicator.Estimate(this.Session, scopeZone)) {
+    if (!this._HEAD.Indicator.Estimate(this.Session, scopeZone)) {
       Urusai.Warning('Result is not passing indicator exam');
       return false;
     }
 
-    scopeZone['__RESULT__'] = (this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(scopeZone, this._JSON.Result));
-    if (this._JSON.Postprocess) return await this._JSON.Postprocess.Value(this.Session, scopeZone);
+    scopeZone['__RESULT__'] = (this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(scopeZone, this._HEAD.Result));
+    if (this._HEAD.Postprocess) return await this._HEAD.Postprocess.Value(this.Session, scopeZone);
     return true;
   }
 
