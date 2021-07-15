@@ -50,8 +50,10 @@ export class Condition {
         switch (condition.Symbol) {
           case 'EQUAL':
             patternResult = patternResult && (await condition.Value.Value(sessionStorage, flowZone)) == (await condition.Expect.Value(sessionStorage, flowZone));
+            break;
           case 'NOT_EQUAL':
             patternResult = patternResult && (await condition.Value.Value(sessionStorage, flowZone)) != (await condition.Expect.Value(sessionStorage, flowZone));
+            break;
         }
 
         if (!patternResult) break;
