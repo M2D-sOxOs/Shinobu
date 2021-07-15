@@ -5,6 +5,8 @@ import { Control } from "./Slave/Control";
 import { Request } from "./Slave/Request";
 import { Rule } from "./Rule";
 import { Cache } from "./Slave/Cache";
+import axiosCookieJarSupport from "axios-cookiejar-support";
+import Axios from "axios";
 
 export class Slave {
 
@@ -76,6 +78,7 @@ export class Slave {
 
     Urusai.Notice('Slave started');
     Cache.Start();
+    axiosCookieJarSupport(Axios);
     throw 'INT';
   }
 

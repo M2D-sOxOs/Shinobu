@@ -40,15 +40,13 @@ export class JSON extends Delegator {
     try {
 
       const inflatedHeaders = Object.assign({}, await this._Inflate(this._Client!.Headers), await this._Inflate(this._Request!.Headers));
-      Urusai.Verbose('Request headers:', inflatedHeaders);
       const inflatedParameters = await this._Inflate(this._Request!.Parameters);
-      Urusai.Verbose('Request parameters:', inflatedParameters);
       const inflatedFormFields = await this._Inflate(this._Request!.Forms);
-      Urusai.Verbose('Request forms:', inflatedFormFields);
 
+      Urusai.Verbose('Request headers:', inflatedHeaders);
+      Urusai.Verbose('Request parameters:', inflatedParameters);
+      Urusai.Verbose('Request forms:', inflatedFormFields);
       Urusai.Verbose('Performing request:', requestUrl);
-      Urusai.Verbose('URL Parameters:', inflatedParameters);
-      Urusai.Verbose('Form fields:', inflatedFormFields);
 
       scopeZone['__REQUEST_HEADERS__'] = inflatedHeaders;
 
@@ -56,6 +54,8 @@ export class JSON extends Delegator {
         url: requestUrl,
         method: this._Request!.Method,
         headers: inflatedHeaders,
+        jar: this.Session.__COOKIE__,
+        withCredentials: true,
         params: inflatedParameters,
         data: 'GET' == this._Request!.Method ? undefined : ('application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : global.JSON.stringify(inflatedFormFields)),
         timeout: this._Request!.Timeout,
@@ -70,6 +70,8 @@ export class JSON extends Delegator {
         }
       });
 
+      Urusai.Verbose('Request finished with status code: ', axiosResult.status);
+
       scopeZone['__RESPONSE_HEADERS__'] = axiosResult.headers;
       scopeZone['__RESPONSE__'] = axiosResult.data;
       scopeZone['__STATUS__'] = axiosResult.status;
@@ -83,7 +85,7 @@ export class JSON extends Delegator {
 
   protected async _PerformResult(scopeZone: any): Promise<boolean> {
 
-    if (!this._JSON.Indicator.Estimate(this.Session, scopeZone)) {
+    if (!(await this._JSON.Indicator.Estimate(this.Session, scopeZone))) {
       Urusai.Warning('Result is not passing indicator exam');
       return false;
     }

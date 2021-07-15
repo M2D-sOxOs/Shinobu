@@ -120,6 +120,7 @@ export class Condition {
         return false;
       }
 
+      console.log(await this.__BuildPath(targetDOMElement));
       if (condition.Path != await this.__BuildPath(targetDOMElement)) return false;
     }
 

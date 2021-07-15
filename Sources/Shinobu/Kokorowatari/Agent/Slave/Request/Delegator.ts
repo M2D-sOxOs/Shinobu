@@ -52,14 +52,22 @@ export abstract class Delegator {
 
   protected async _Inflate(expressionTable: Table<Expression>): Promise<Table<string>> {
 
+    const flowZone = this.FlowZone, sessionStorage = this.Session;
     const inflatedTable: Table<string> = {};
     for (const key in expressionTable) {
-      if (false === (inflatedTable[key] = await expressionTable[key].Value(this.Session, this.FlowZone))) {
+
+      let parsedKey: string = key;
+      const keyVars = key.match(/\${([a-z0-9_\.]+)}/ig)?.map(keyVar => {
+        const keyVarValue = eval(keyVar.replace(/^\${([a-z0-9_]+)([a-z0-9_\.]+)}$/i, '(flowZone["$1"] || sessionStorage["$1"])$2'));
+        parsedKey = parsedKey.replace(keyVar, keyVarValue)
+      });
+
+      if (false === (inflatedTable[parsedKey] = await expressionTable[key].Value(this.Session, this.FlowZone))) {
         Urusai.Error('Cannot get value of expression for the field:', key);
         throw new Error('Cannot get value of expression for the field: ' + key);
       }
 
-      if (null === inflatedTable[key]) delete inflatedTable[key];
+      if (null === inflatedTable[parsedKey]) delete inflatedTable[parsedKey];
     }
     return inflatedTable;
 

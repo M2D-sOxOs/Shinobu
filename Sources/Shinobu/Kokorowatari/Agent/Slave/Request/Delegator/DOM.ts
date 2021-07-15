@@ -1,6 +1,5 @@
 import Axios, { AxiosResponse } from "axios";
 import { load } from "cheerio";
-import { writeFileSync } from "fs";
 import { stringify } from "querystring";
 import { Urusai } from "../../../../../../Common/Urusai/Urusai";
 import { Table } from "../../../Rule";
@@ -13,6 +12,10 @@ import { Delegator } from "../Delegator";
 //@ts-ignore
 import * as encoding from "encoding";
 
+/**
+ * Most easy way to map an element
+ * let x = $0, y = []; while(x.tagName != 'BODY') y.unshift([...x.parentNode.children].indexOf(x)), (x = x.parentNode); '/body/' + y.join('/');
+ */
 export class DOM extends Delegator {
 
   private _DOM!: DOMRule;
@@ -38,35 +41,47 @@ export class DOM extends Delegator {
     try {
 
       const inflatedHeaders = Object.assign({}, await this._Inflate(this._Client!.Headers), await this._Inflate(this._Request!.Headers));
-      Urusai.Verbose('Request headers:', inflatedHeaders);
       const inflatedParameters = await this._Inflate(this._Request!.Parameters);
-      Urusai.Verbose('Request parameters:', inflatedParameters);
       const inflatedFormFields = await this._Inflate(this._Request!.Forms);
-      Urusai.Verbose('Request forms:', inflatedFormFields);
 
+      Urusai.Verbose('Request headers:', inflatedHeaders);
+      Urusai.Verbose('Request parameters:', inflatedParameters);
+      Urusai.Verbose('Request forms:', inflatedFormFields);
       Urusai.Verbose('Performing request:', requestUrl);
-      Urusai.Verbose('URL Parameters:', inflatedParameters);
-      Urusai.Verbose('Form fields:', inflatedFormFields);
+
+      scopeZone['__REQUEST_HEADERS__'] = inflatedHeaders;
 
       axiosResult = await Axios({
         url: requestUrl,
         method: this._Request!.Method,
         headers: inflatedHeaders,
+        jar: this.Session.__COOKIE__,
+        withCredentials: true,
         params: inflatedParameters,
         data: 'GET' == this._Request!.Method ? undefined : ('application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : inflatedFormFields),
         timeout: this._Request!.Timeout,
         httpAgent: this.Session.Proxy ? this.Session.Proxy.httpAgent : undefined,
         httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined,
         maxRedirects: 0,
+        responseType: 'arraybuffer',
         validateStatus: (status: number) => {
           return status >= 200 && status < 400;
         },
-        transformResponse: (rawData: any) => {
-          return this._Request?.Encoding ? encoding.convert(rawData, 'utf8', this._Request?.Encoding) : rawData
+        transformResponse: (rawData: Buffer) => {
+          if (this._Request?.Encoding) {
+            Urusai.Verbose('Converting from encoding:', this._Request?.Encoding);
+            const converted = encoding.convert(rawData, 'utf8', this._Request?.Encoding);
+            return converted.toString('utf8');
+          }
+          return rawData.toString('utf8');
         }
       });
 
+      Urusai.Verbose('Request finished with status code: ', axiosResult.status);
+
+      scopeZone['__RESPONSE_HEADERS__'] = axiosResult.headers;
       scopeZone['__RESPONSE__'] = axiosResult.data;
+      scopeZone['__STATUS__'] = axiosResult.status;
       return true;
     } catch (e) {
       Urusai.Error('Error happened when processing request:', this._Request!.Method, requestUrl);
@@ -95,7 +110,7 @@ export class DOM extends Delegator {
 
     const domObject: cheerio.Root = load(scopeZone['__RESPONSE__']);
 
-    if (!this._DOM.Indicator.Estimate(domObject, this.Session, scopeZone)) {
+    if (!(await this._DOM.Indicator.Estimate(domObject, this.Session, scopeZone))) {
       Urusai.Warning('Result is not passing indicator exam');
       return false;
     }
@@ -107,12 +122,12 @@ export class DOM extends Delegator {
       await processor.Process(domObject, this.Session, scopeZone);
     });
 
-    this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), scopeZone, this.Command.DOM!.Result);
+    this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), scopeZone, domObject.root(), this.Command.DOM!.Result);
 
     return true;
   }
 
-  private async __PerformResultStructure(searchElement: cheerio.Cheerio, scopeZone: any, resultObject?: Result): Promise<any> {
+  private async __PerformResultStructure(searchElement: cheerio.Cheerio, scopeZone: any, rootElement: cheerio.Cheerio, resultObject?: Result): Promise<any> {
 
     if (!resultObject) {
       delete this.FlowZone['__RESULT__'];
@@ -121,46 +136,80 @@ export class DOM extends Delegator {
 
     switch (resultObject.Type) {
       case 'SIMPLE':
-        return await this.__PerformResultStructureValue(resultObject.Value as string, searchElement);
+        return await this.__PerformResultStructureValue(resultObject.Value as string, searchElement, scopeZone, rootElement);
       case 'NULL':
         return null;
       case 'COMBINED':
-        return await this.__PerformResultStructureValues(resultObject.Value as string, searchElement);
+        return await this.__PerformResultStructureValues(resultObject.Value as string, searchElement, scopeZone, rootElement);
       case 'ARRAY':
 
-        const mappedChildren: cheerio.Cheerio = await this.__PerformResultStructureValue(resultObject.Map!, searchElement);
-        const mappedArray: cheerio.Cheerio[] = [];
-        mappedChildren.map(i => mappedArray.push(mappedChildren.eq(i)));
+        {
+          const mappedChildren: cheerio.Cheerio = await this.__PerformResultStructureValue(resultObject.MapFrom!, searchElement, scopeZone, rootElement);
+          const mappedArray: cheerio.Cheerio[] = [];
+          mappedChildren.map(i => mappedArray.push(mappedChildren.eq(i)));
 
-        const resultArray: any[] = [];
-        for (const v of mappedArray) resultArray.push(await this.__PerformResultStructure(v, scopeZone, resultObject.Value as Result));
+          const resultArray: any[] = [];
+          scopeZone[resultObject.MapTo! + '_Index'] = 0;
+          for (const v of mappedArray) {
+            scopeZone[resultObject.MapTo!] = v;
+            resultArray.push(await this.__PerformResultStructure(searchElement, scopeZone, rootElement, resultObject.Value as Result));
+            scopeZone[resultObject.MapTo! + '_Index']++;
+          }
+          return resultArray;
+        }
+      case 'ARRAY_VALUE':
+        {
+          const mappedArray: any[] = await this.__PerformResultStructureValue(resultObject.MapFrom!, searchElement, scopeZone, rootElement);
 
-        return resultArray;
+          const resultArray: any[] = [];
+          scopeZone[resultObject.MapTo! + '_Index'] = 0;
+          for (const v of mappedArray) {
+            scopeZone[resultObject.MapTo!] = v;
+            resultArray.push(await this.__PerformResultStructure(searchElement, scopeZone, rootElement, resultObject.Value as Result));
+            scopeZone[resultObject.MapTo! + '_Index']++;
+          }
+
+          return resultArray;
+        }
       case 'TABLE':
 
         const outputObject: any = {};
-        for (const resultKey in resultObject.Value as Table<Result>) outputObject[resultKey] = await this.__PerformResultStructure(searchElement, scopeZone, (resultObject.Value as Table<Result>)[resultKey]);
+        for (const resultKey in resultObject.Value as Table<Result>) outputObject[resultKey] = await this.__PerformResultStructure(searchElement, scopeZone, rootElement, (resultObject.Value as Table<Result>)[resultKey]);
         return outputObject;
     }
 
     Urusai.Panic('Unknown type of Result, Check your configuration file');
   }
 
-  private async __PerformResultStructureValue(domRExp: string, searchElement: cheerio.Cheerio) {
+  private async __PerformResultStructureValue(domRExp: string, searchElement: cheerio.Cheerio, scopeZone: any, rootElement: cheerio.Cheerio) {
 
     const domRExps = domRExp.split('@');
-    if (domRExps[0]) searchElement = searchElement.find(domRExps[0]);
+    if (domRExps[0]) {
+      const selectors = domRExps[0].split(/(\s+|>)/);
+      const firstSelector = selectors[0];
+      if ('$' == firstSelector[0]) {
+        searchElement = scopeZone[firstSelector.substr(1)];
+        domRExps[0] = domRExps[0].substr(firstSelector.length)
+      }
 
-    return domRExps[1] ? eval(`searchElement.${domRExps[1]}`) : searchElement;
+      if ('/' == firstSelector[0]) {
+        searchElement = rootElement;
+        domRExps[0] = domRExps[0].substr(1)
+      }
+
+      if (domRExps[0].trim()) searchElement = searchElement.find(domRExps[0]);
+    }
+
+    return domRExps[1] ? eval(`searchElement.${domRExps[1].replace(/\$([a-z_]+)/gi, 'scopeZone[\'$1\']')}`) : searchElement;
   }
 
-  private async __PerformResultStructureValues(domRExp: string, searchElement: cheerio.Cheerio) {
+  private async __PerformResultStructureValues(domRExp: string, searchElement: cheerio.Cheerio, scopeZone: any, rootElement: cheerio.Cheerio) {
 
     const domRexpArray = domRExp.split('+');
     const resultArray = await Promise.all(domRexpArray.map(v => {
       const matchedResult = v.trim().match(/^(["'])([^\1]*?)\1$/);
       if (matchedResult) return matchedResult[2];
-      return this.__PerformResultStructureValue(v, searchElement);
+      return this.__PerformResultStructureValue(v, searchElement, scopeZone, rootElement);
     }));
     return resultArray.join('')
   }

@@ -164,7 +164,7 @@ export class Expression {
   public async Value(sessionStorage: any = {}, flowZone?: any) {
 
     switch (this._Type) {
-      case 'DYNAMIC': return this.__Find(flowZone);
+      case 'DYNAMIC': return this.__Find(Object.assign({}, sessionStorage, flowZone));
       case 'STATIC': return this._Map;
       case 'MOCK': return this.__Mocker!.Value(sessionStorage, flowZone);
       case 'EXECUTION':
