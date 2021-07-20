@@ -57,8 +57,8 @@ export abstract class Delegator {
     for (const key in expressionTable) {
 
       let parsedKey: string = key;
-      const keyVars = key.match(/\${([a-z0-9_\.]+)}/ig)?.map(keyVar => {
-        const keyVarValue = eval(keyVar.replace(/^\${([a-z0-9_]+)([a-z0-9_\.]+)}$/i, '(flowZone["$1"] || sessionStorage["$1"])$2'));
+      const keyVars = key.match(/\${([a-z0-9_\.\[\]]+)}/ig)?.map(keyVar => {
+        const keyVarValue = eval(keyVar.replace(/^\${([a-z0-9_]+)([a-z0-9_\.\[\]]+)}$/i, '(flowZone["$1"] || sessionStorage["$1"])$2'));
         parsedKey = parsedKey.replace(keyVar, keyVarValue)
       });
 
