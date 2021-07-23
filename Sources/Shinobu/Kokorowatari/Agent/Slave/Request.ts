@@ -16,6 +16,7 @@ import { SocksProxyAgent } from "socks-proxy-agent";
 import { httpOverHttp, httpsOverHttp } from "tunnel";
 import { INSET } from "./Request/Delegator/INSET";
 import { CookieJar } from "tough-cookie";
+import { Client } from "../Rule/Platform/Client";
 
 /**
  * All things moving on Request
@@ -23,6 +24,8 @@ import { CookieJar } from "tough-cookie";
 export class Request {
 
   private static __Pending: { [k: string]: true } = {};
+
+  private static __Cookies: { [k: string]: CookieJar } = {};
 
   /**
    * Actual processor for flows
@@ -51,9 +54,7 @@ export class Request {
 
     const flowObject: Flow = await flowExpr.Value();
 
-    let sessionStorage: any = {
-      __COOKIE__: new CookieJar()
-    };
+    const sessionStorage: any = {};
 
     if (flowObject.Proxy && (<Proxy>await flowObject.Proxy.Value()).Enabled) {
 
@@ -110,6 +111,11 @@ export class Request {
   }
 
   private static async __Execute(quickCommandName: string, commandObject: Command, sessionStorage: any, flowZone: any) {
+
+    const client: Client = await commandObject.Client?.Value(sessionStorage, flowZone)
+    Urusai.Error(client);
+    if (client.Cookie) sessionStorage['__COOKIE__'] = (this.__Cookies[client.Cookie] = this.__Cookies[client.Cookie] || new CookieJar());
+
     Urusai.Verbose('Executing command', quickCommandName);
     let cacheKey = '';
     let scopeZone: any = {};
@@ -118,14 +124,12 @@ export class Request {
       cacheKey = (await Promise.all(commandObject.Cache.Key.map(async (v) => await v.Value(sessionStorage, scopeZone)))).join(' ');
       if (Cache.Has(cacheKey)) {
         Urusai.Verbose('Cache hit with key:', cacheKey);
-        sessionStorage['__COOKIE__'] = CookieJar.fromJSON(Cache.Get(cacheKey + '@COOKIE'));
         return Cache.Get(cacheKey);
       }
       if (cacheKey in this.__Pending) {
         Urusai.Verbose('Cache hit but need waiting for it');
         // TODO: Replace default timeout into Jinja
         if (!await this.__ExecutePending(cacheKey, commandObject.Request?.Timeout || 3000)) return false;
-        sessionStorage['__COOKIE__'] = CookieJar.fromJSON(Cache.Get(cacheKey + '@COOKIE'));
         return Cache.Get(cacheKey);
       }
     }
@@ -168,7 +172,6 @@ export class Request {
       const cacheExpire: string = await commandObject.Cache.Expire.Value(sessionStorage, scopeZone);
       let cacheExpireTime: number = '+' == cacheExpire[0] ? Math.floor((new Date().getTime() / 1000) + parseInt(cacheExpire)) : parseInt(cacheExpire);
       Cache.Set(cacheKey, flowZone['__RESULT__'], cacheExpireTime);
-      Cache.Set(cacheKey + '@COOKIE', sessionStorage['__COOKIE__'].toJSON(), cacheExpireTime);
       delete this.__Pending[cacheKey];
     }
 
