@@ -113,8 +113,7 @@ export class Request {
   private static async __Execute(quickCommandName: string, commandObject: Command, sessionStorage: any, flowZone: any) {
 
     const client: Client = await commandObject.Client?.Value(sessionStorage, flowZone)
-    Urusai.Error(client);
-    if (client.Cookie) sessionStorage['__COOKIE__'] = (this.__Cookies[client.Cookie] = this.__Cookies[client.Cookie] || new CookieJar());
+    if (client?.Cookie) sessionStorage['__COOKIE__'] = (this.__Cookies[client.Cookie] = this.__Cookies[client.Cookie] || new CookieJar());
 
     Urusai.Verbose('Executing command', quickCommandName);
     let cacheKey = '';

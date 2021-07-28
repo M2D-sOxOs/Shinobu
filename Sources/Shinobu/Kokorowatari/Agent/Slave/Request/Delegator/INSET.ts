@@ -30,12 +30,14 @@ export class INSET extends Delegator {
   }
 
   protected async _PerformRequest(scopeZone: any): Promise<boolean> {
+    console.log(1);
 
     return true;
   }
 
   protected async _PerformResult(scopeZone: any): Promise<boolean> {
 
+    console.log(1);
     this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(scopeZone, this._INSET.Result);
     return true;
   }
