@@ -165,10 +165,10 @@ export class Condition {
           builtPath = '/' + targetDOMElement.index() + builtPath;
       }
 
-      console.log(builtPath);
       targetDOMElement = targetDOMElement.parent();
     }
-
+    
+    console.log(builtPath);
     return builtPath;
   }
 
