@@ -1,4 +1,5 @@
 import { Jinja } from "../../../../../Common/Jinja/Jinja";
+import { Agent } from "../../../Agent";
 import { Master } from "../../Master";
 import { Base } from "./Base";
 
@@ -48,7 +49,7 @@ export class Active extends Base {
       let cacheKey;
       while (cacheKey = this._Pending.shift()) {
         const cacheEntry = this._Data[cacheKey];
-        await Master.Perform(cacheEntry.Flow, cacheEntry.In);
+        await Master.Perform(cacheEntry.Flow, cacheEntry.In, Agent.GenerateID());
       }
 
       this._Queue();
