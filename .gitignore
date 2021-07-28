@@ -1,3 +1,6 @@
 Release
 node_modules
 pacakge-lock.json
+
+!.gitkeep
+/Cache

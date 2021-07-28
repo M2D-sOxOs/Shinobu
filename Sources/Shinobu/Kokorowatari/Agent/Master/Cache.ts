@@ -31,9 +31,16 @@ export class Cache {
   /**
    * 
    * @param key 
-   * @param value 
    */
   public static async Set(key: string, value: string, flowName: string, inData: any, expire: number, driver: string) {
     return await this.__Drivers[driver].Set(key, value, flowName, inData, expire);
+  }
+
+  /**
+   * 
+   * @param key 
+   */
+  public static async Clear(key: string, driver: string) {
+    return await this.__Drivers[driver].Clear(key);
   }
 }

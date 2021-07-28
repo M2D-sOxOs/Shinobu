@@ -85,6 +85,8 @@ export class Koyomi {
       const flowName = q.url!.substr(1);
       Urusai.Verbose('Calling flow', flowName, 'using data', jsonData);
 
+      const requestId = Agent.GenerateID();
+
       try {
         const reqHash = createHash('md5').update(flowName + '-' + jsonData).digest().toString('hex');
 
@@ -99,14 +101,6 @@ export class Koyomi {
 
         var requestData = JSON.parse(jsonData);
 
-        const requestId = await Master.Perform(flowName, requestData);
-        if (!requestId) {
-          Urusai.Error('Cannot create request');
-          throw '';
-        }
-
-        Urusai.Notice('Request:', requestId);
-        
         p.setTimeout(Jinja.Get('Koyomi.Timeout'), () => {
           Urusai.Warning('Timeout when processing request');
           p.writeHead(504, 'Koyomi Timeout');
@@ -121,13 +115,19 @@ export class Koyomi {
           this.__RequestHash[requestId] = reqHash;
         }
         this.__Responses[requestId] = [p];
+
+        Urusai.Notice('Requesting:', requestId);
+        Master.Perform(flowName, requestData, requestId);
+
       } catch (e) {
-        console.log(e);
-        Urusai.Error('Something went wrong when processing request');
+        Urusai.Error(e);
+        p.writeHead(503, 'Gateway Failure');
         p.end();
+        
+        delete this.__Responses[requestId];
+        delete this.__HashRequest[this.__RequestHash[requestId]];
+        delete this.__RequestHash[requestId];
       }
-      // p.writeHead(200);
-      // p.end(JSON.stringify(resObj));
     });
   }
 

@@ -207,16 +207,12 @@ export class Master {
   /**
    * Perform an actual crawl
    */
-  public static async Perform(flowName: string, userInput: Table<string>): Promise<string | null> {
+  public static async Perform(flowName: string, userInput: Table<string>, requestId: string): Promise<string | null> {
 
-    return await this.__Perform(new Expression('*' + flowName), {
-      __IN__: userInput
-    });
+    return await this.__Perform(new Expression('*' + flowName), { __IN__: userInput }, requestId);
   }
 
-  private static async __Perform(flowExpr: Expression, flowZone: any, requestId?: string): Promise<string | null> {
-
-    requestId = requestId || Agent.GenerateID();
+  private static async __Perform(flowExpr: Expression, flowZone: any, requestId: string): Promise<string | null> {
 
     Urusai.Verbose('Start handling with flow:', flowExpr.Expression);
     const flowObject: Flow = await flowExpr.Value();
@@ -226,13 +222,17 @@ export class Master {
       for (const key of flowObject.Cache.Key) cacheKey += (await key.Value({}, flowZone)) + '-';
       Urusai.Verbose('Trying to use cache:', cacheKey);
 
-      const cacheData = await Cache.Get(cacheKey, flowObject.Cache.Mode);
-      if (cacheData) {
-        Urusai.Verbose('Cache hit', requestId);
-        setImmediate(() => {
-          this.__CALLBACKS.forEach(v => v(0, requestId!, cacheData));
-        });
-        return requestId;
+      try {
+        const cacheData = await Cache.Get(cacheKey, flowObject.Cache.Mode);
+        if (cacheData) {
+          Urusai.Verbose('Cache hit', cacheKey);
+          setImmediate(() => {
+            this.__CALLBACKS.forEach(v => v(0, requestId!, cacheData));
+          });
+          return requestId;
+        }
+      } catch {
+        throw 'Cache failed after waiting.';
       }
     }
 
@@ -242,8 +242,7 @@ export class Master {
         return await this.__Perform(flowObject.Failover, flowZone, requestId);
       }
 
-      Urusai.Warning('Using flow as a virtual node without providing failover will always return false');
-      return null;
+      throw 'Using flow as a virtual node without providing failover will always return false';
     }
 
     const agentId = this.__Pick();
@@ -277,18 +276,19 @@ export class Master {
     const flowObject = this.__Flowing[requestId];
     if (flowObject.Cache) {
 
+      let cacheKey = '';
+      for (const key of flowObject.Cache.Key) cacheKey += (await key.Value({}, this.__Additional[requestId])) + '-';
+
       if (0 == status) {
-        
+
         Urusai.Verbose('Result should be cached according to cache policy');
         let cacheExpire = await flowObject.Cache.Expire.Value();
         if ('+' == cacheExpire[0]) cacheExpire = new Date().getTime() + cacheExpire;
-  
-        let cacheKey = '';
-        for (const key of flowObject.Cache.Key) cacheKey += (await key.Value({}, this.__Additional[requestId])) + '-';
-  
+
         Cache.Set(cacheKey, responseData, this.__Expression[requestId], this.__Additional[requestId], cacheExpire, flowObject.Cache.Mode);
       } else {
         Urusai.Verbose('Result will not be cached cuz status is not success');
+        Cache.Clear(cacheKey, flowObject.Cache.Mode);
       }
 
     }
