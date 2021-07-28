@@ -23,10 +23,9 @@ export class Base {
 
   protected _Requesting: string[] = [];
 
-  protected _Filename = join(Jinja.Get('Koyomi.Cache.Path'), 'Koyomi-Cache');
+  constructor(protected _Filename: string) {
 
-  constructor() {
-
+    Urusai.Verbose('Loading cache from:', this._Filename);
     if (existsSync(this._Filename)) this._Data = JSON.parse(readFileSync(this._Filename).toString('utf-8'));
     this.__Monitor(Jinja.Get('Koyomi.Cache.Save'));
   }
@@ -76,6 +75,7 @@ export class Base {
   private __Monitor(saveDelay: number) {
 
     setTimeout(() => {
+      Urusai.Verbose('Master cache saved');
       writeFileSync(this._Filename, JSON.stringify(this._Data));
       this.__Monitor(saveDelay);
     }, 1000);

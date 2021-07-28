@@ -285,7 +285,7 @@ export class Master {
         let cacheExpire = await flowObject.Cache.Expire.Value();
         if ('+' == cacheExpire[0]) cacheExpire = new Date().getTime() + cacheExpire;
 
-        Cache.Set(cacheKey, responseData, this.__Expression[requestId], this.__Additional[requestId], cacheExpire, flowObject.Cache.Mode);
+        Cache.Set(cacheKey, responseData, this.__Expression[requestId].substr(1), this.__Additional[requestId], cacheExpire, flowObject.Cache.Mode);
       } else {
         Urusai.Verbose('Result will not be cached cuz status is not success');
         Cache.Clear(cacheKey, flowObject.Cache.Mode);

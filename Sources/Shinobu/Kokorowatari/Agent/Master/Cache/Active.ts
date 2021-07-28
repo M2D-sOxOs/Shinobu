@@ -1,3 +1,4 @@
+import { join } from "path";
 import { Jinja } from "../../../../../Common/Jinja/Jinja";
 import { Agent } from "../../../Agent";
 import { Master } from "../../Master";
@@ -8,7 +9,7 @@ export class Active extends Base {
   protected _Pending: string[] = [];
 
   constructor() {
-    super();
+    super(join(Jinja.Get('Koyomi.Cache.Path'), 'Koyomi-Cache-Active'));
 
     this._Queue();
     this._Tick();

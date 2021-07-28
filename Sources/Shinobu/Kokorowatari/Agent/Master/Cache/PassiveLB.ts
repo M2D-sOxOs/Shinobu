@@ -1,14 +1,15 @@
+import { join } from "path";
 import { Jinja } from "../../../../../Common/Jinja/Jinja";
 import { Agent } from "../../../Agent";
 import { Master } from "../../Master";
 import { Base, Entry } from "./Base";
 
 export class PassiveLB extends Base {
-
+  
   protected _Pending: string[] = [];
 
   constructor() {
-    super();
+    super(join(Jinja.Get('Koyomi.Cache.Path'), 'Koyomi-Cache-PassiveLB'));
 
     this._Queue();
   }
