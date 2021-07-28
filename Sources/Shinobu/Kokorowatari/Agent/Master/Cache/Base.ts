@@ -78,7 +78,7 @@ export class Base {
       Urusai.Verbose('Master cache saved');
       writeFileSync(this._Filename, JSON.stringify(this._Data));
       this.__Monitor(saveDelay);
-    }, 1000);
+    }, saveDelay);
   }
 
 }
