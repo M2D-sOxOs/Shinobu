@@ -8,6 +8,8 @@ import { Request } from "../../Rule/Platform/Command/Request";
 import { Expression } from "../../Rule/Expression";
 import { Proxy } from "../../Rule/Platform/Proxy";
 import { Tokei } from "../../../../../Common/Tokei/Tokei";
+import { Jinja } from "../../../../../Common/Jinja/Jinja";
+import { createCipheriv } from "crypto";
 
 export abstract class Delegator {
 
@@ -71,5 +73,13 @@ export abstract class Delegator {
     }
     return inflatedTable;
 
+  }
+
+  protected _Urlfy(rawUrl: string) {
+    const key = Jinja.Get('Kokorowatari.Urlfy.Key');
+    const iv = Jinja.Get('Kokorowatari.Urlfy.IV');
+
+    const cipher = createCipheriv('aes-128-cfb', key, iv);
+    return cipher.update(rawUrl, 'utf8', 'base64');
   }
 }

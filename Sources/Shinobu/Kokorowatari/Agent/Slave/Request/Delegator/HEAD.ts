@@ -103,8 +103,8 @@ export class HEAD extends Delegator {
 
     switch (result.Type) {
       case 'CONCAT': return (await Promise.all((result.Value as Expression[]).map(v => v.Value(this.Session, scopeZone)))).join('');
-      case 'SIMPLE':
-      case 'URL': return await (result.Value as Expression).Value(this.Session, scopeZone);
+      case 'SIMPLE': return await (result.Value as Expression).Value(this.Session, scopeZone);
+      case 'URL': return this._Urlfy(await (result.Value as Expression).Value(this.Session, scopeZone));
       case 'ARRAY':
 
         // Map
