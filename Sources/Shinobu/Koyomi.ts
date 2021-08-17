@@ -117,7 +117,7 @@ export class Koyomi {
         this.__Responses[requestId] = [p];
 
         Urusai.Notice('Requesting:', requestId);
-        Master.Perform(flowName, requestData, requestId);
+        await Master.Perform(flowName, requestData, requestId);
 
       } catch (e) {
         Urusai.Error(e);
