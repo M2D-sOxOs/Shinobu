@@ -81,6 +81,6 @@ export abstract class Delegator {
 
     const cipher = createCipheriv('aes-128-cfb', key, iv);
     cipher.setAutoPadding(true);
-    return Jinja.Get('Kokorowatari.Urlfy.Prefix') + '/' + encodeURIComponent(cipher.update(rawUrl, 'utf8', 'base64'));
+    return Jinja.Get('Kokorowatari.Urlfy.Prefix') + '/' + encodeURIComponent(cipher.update(rawUrl, 'utf8', 'base64')) + encodeURIComponent(cipher.final('base64'));
   }
 }
