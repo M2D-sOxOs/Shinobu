@@ -144,8 +144,8 @@ export class Expression {
 
     let searchZone: any = this.__Zone || (this.__ZoneName ? flowZone[this.__ZoneName] : Rule.Platforms);
     for (let partIndex = 0; partIndex < expressionParts.length; partIndex++) {
-      searchZone = searchZone[expressionParts[partIndex]] || null;
-      if (!searchZone) return null;
+      if (!searchZone) return searchZone;
+      searchZone = expressionParts[partIndex] in searchZone ? searchZone[expressionParts[partIndex]] : null;
     }
     return searchZone;
   }
@@ -176,7 +176,7 @@ export class Expression {
         let resultValue: any = null;
         try {
           eval(`resultValue = ${this._Expression}`);
-        } catch(e) {
+        } catch (e) {
           Urusai.Error('Expression', this._Expression, 'execution failed');
           Urusai.Error(e.toString());
         }
