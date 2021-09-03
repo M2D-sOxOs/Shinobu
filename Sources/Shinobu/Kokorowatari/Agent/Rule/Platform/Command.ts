@@ -13,7 +13,7 @@ export type CommandConfig = {
   Client?: ClientConfig | string,
   Cache?: CacheConfig,
   Request?: RequestConfig,
-  Type: 'JSON' | 'HEAD' | 'DOMD' | 'DOMS' | 'INSET',
+  Type: 'JSON' | 'HEAD' | 'DOMD' | 'DOMS' | 'XML' | 'INSET',
   HEAD?: HEADConfig,
   JSON?: JSONConfig,
   DOM?: DOMConfig,
@@ -25,7 +25,7 @@ export class Command {
   public readonly Client?: Expression;
   public readonly Cache?: Cache;
   public readonly Request?: Request;
-  public readonly Type: 'JSON' | 'HEAD' | 'DOMD' | 'DOMS' | 'INSET';
+  public readonly Type: 'JSON' | 'HEAD' | 'DOMD' | 'DOMS' | 'XML' | 'INSET';
   public readonly HEAD?: HEAD;
   public readonly JSON?: JSON;
   public readonly DOM?: DOM;
