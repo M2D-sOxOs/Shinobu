@@ -127,6 +127,30 @@ export class DOM extends Delegator {
     return true;
   }
 
+  private async __PerformResultDOMX(scopeZone: any): Promise<boolean> {
+
+    const domObject: cheerio.Root = load(scopeZone['__RESPONSE__'], {
+      xmlMode: true,
+      decodeEntities: true
+    });
+
+    if (!(await this._DOM.Indicator.Estimate(domObject, this.Session, scopeZone))) {
+      Urusai.Warning('Result is not passing indicator exam');
+      return false;
+    }
+
+    /**
+     * Perform pre-processors
+     */
+    this._DOM.Preprocess?.forEach(async (processor) => {
+      await processor.Process(domObject, this.Session, scopeZone);
+    });
+
+    this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), scopeZone, domObject.root(), this.Command.DOM!.Result);
+
+    return true;
+  }
+
   private async __PerformResultStructure(searchElement: cheerio.Cheerio, scopeZone: any, rootElement: cheerio.Cheerio, resultObject?: Result): Promise<any> {
 
     if (!resultObject) {
@@ -178,7 +202,7 @@ export class DOM extends Delegator {
         return outputObject;
     }
 
-    Urusai.Panic('Unknown type of Result, Check your configuration file');
+    Urusai.Panic('Unknown type of Result', resultObject.Type, ', Check your configuration file');
   }
 
   private async __PerformResultStructureValue(domRExp: string, searchElement: cheerio.Cheerio, scopeZone: any, rootElement: cheerio.Cheerio) {

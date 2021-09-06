@@ -76,6 +76,7 @@ export abstract class Delegator {
   }
 
   protected _Urlfy(rawUrl: string) {
+    if (!rawUrl) return rawUrl;
     const key = Jinja.Get('Kokorowatari.Urlfy.Key');
     const iv = Jinja.Get('Kokorowatari.Urlfy.IV');
 
