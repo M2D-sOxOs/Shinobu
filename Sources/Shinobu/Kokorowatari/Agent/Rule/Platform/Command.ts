@@ -6,6 +6,7 @@ import { Request, RequestConfig } from "../Platform/Command/Request";
 import { Expression } from "../../Rule/Expression";
 import { Cache, CacheConfig } from "./Command/Cache";
 import { DOM, DOMConfig } from "./Command/DOM";
+import { XML, XMLConfig } from "./Command/XML";
 import { INSET, INSETConfig } from "./Command/INSET";
 import { HEAD, HEADConfig } from "./Command/HEAD";
 
@@ -17,6 +18,7 @@ export type CommandConfig = {
   HEAD?: HEADConfig,
   JSON?: JSONConfig,
   DOM?: DOMConfig,
+  XML?: XMLConfig,
   INSET?: INSETConfig,
 }
 
@@ -29,6 +31,7 @@ export class Command {
   public readonly HEAD?: HEAD;
   public readonly JSON?: JSON;
   public readonly DOM?: DOM;
+  public readonly XML?: XML;
   public readonly INSET?: INSET;
 
   constructor(commandConfig: CommandConfig) {
@@ -41,6 +44,9 @@ export class Command {
     switch (this.Type) {
       case 'JSON':
         this.JSON = new JSON(commandConfig.JSON!);
+        break;
+      case 'XML':
+        this.XML = new XML(commandConfig.XML!);
         break;
       case 'HEAD':
         this.HEAD = new HEAD(commandConfig.HEAD!);

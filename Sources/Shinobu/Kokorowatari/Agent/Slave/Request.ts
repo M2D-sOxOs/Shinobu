@@ -17,6 +17,7 @@ import { httpOverHttp, httpsOverHttp } from "tunnel";
 import { INSET } from "./Request/Delegator/INSET";
 import { CookieJar } from "tough-cookie";
 import { Client } from "../Rule/Platform/Client";
+import { XML } from "./Request/Delegator/XML";
 
 /**
  * All things moving on Request
@@ -144,6 +145,13 @@ export class Request {
       case 'HEAD':
         Urusai.Verbose('Perform with HEAD');
         if (!await (await (new HEAD(commandObject, sessionStorage, flowZone)).Initialize()).Perform(scopeZone)) {
+          Urusai.Warning('Execute command', quickCommandName, 'failed');
+          return false;
+        }
+        break;
+      case 'XML':
+        Urusai.Verbose('Perform with XML');
+        if (!await (await (new XML(commandObject, sessionStorage, flowZone)).Initialize()).Perform(scopeZone)) {
           Urusai.Warning('Execute command', quickCommandName, 'failed');
           return false;
         }
