@@ -2,6 +2,7 @@ import { Urusai } from "../../../../../Common/Urusai/Urusai";
 import { Table } from "../../Rule";
 import { Base } from "./Mock/Base";
 import { UUID } from "./Mock/UUID";
+import { DPOP } from "./Mock/DPOP";
 import { RakutenPage } from "./Mock/RakutenPage";
 import { RakutenPaged } from "./Mock/RakutenPaged";
 import { RakutenSort } from "./Mock/RakutenSort";
@@ -24,6 +25,9 @@ export class Mock {
     switch (Name) {
       case '@UUID':
         this.__Mocker = new UUID();
+        return;
+      case '@DPOP':
+        this.__Mocker = new DPOP();
         return;
       case '@RakutenPage':
         this.__Mocker = new RakutenPage();
@@ -48,8 +52,8 @@ export class Mock {
     Urusai.Panic('Using unknown mock', Name);
   }
 
-  public Value(sessionStorage: Table<Table<string>>, flowZone?: any): string {
+  public async Value(sessionStorage: Table<Table<string>>, flowZone?: any): Promise<string> {
     sessionStorage[this.Name] || (sessionStorage[this.Name] = {});
-    return sessionStorage[this.Name][this.Key] || (sessionStorage[this.Name][this.Key] = this.__Mocker.Value(this.Key, sessionStorage, flowZone));
+    return sessionStorage[this.Name][this.Key] || (sessionStorage[this.Name][this.Key] = await this.__Mocker.Value(this.Key, sessionStorage, flowZone));
   }
 }

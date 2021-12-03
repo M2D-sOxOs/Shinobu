@@ -176,7 +176,7 @@ export class Expression {
         let resultValue: any = null;
         try {
           eval(`resultValue = ${this._Expression}`);
-        } catch (e) {
+        } catch (e: any) {
           Urusai.Error('Expression', this._Expression, 'execution failed');
           Urusai.Error(e.toString());
         }

@@ -119,7 +119,7 @@ export class Koyomi {
         Urusai.Notice('Requesting:', requestId);
         await Master.Perform(flowName, requestData, requestId);
 
-      } catch (e) {
+      } catch (e: any) {
         Urusai.Error(e);
         p.writeHead(503, 'Gateway Failure');
         p.end();

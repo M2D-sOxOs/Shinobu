@@ -40,7 +40,7 @@ export abstract class Delegator {
       })) && (await Tokei.Record('Result-Resolve', async () => {
         return await this._PerformResult(scopeZone);
       }));
-    } catch (e) {
+    } catch (e: any) {
       console.log(e);
       Urusai.Error('Something goes wrong when processing, Maybe the source data structure changed?');
       Urusai.Error('Error request:', (await this.Command.Client?.Value()).Host + await this.Command.Request?.URL.Value());

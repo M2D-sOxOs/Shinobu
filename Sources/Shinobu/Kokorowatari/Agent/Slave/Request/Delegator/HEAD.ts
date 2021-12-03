@@ -75,7 +75,7 @@ export class HEAD extends Delegator {
       scopeZone['__RESPONSE_HEADERS__'] = axiosResult.headers;
       scopeZone['__STATUS__'] = axiosResult.status;
       return true;
-    } catch (e) {
+    } catch (e: any) {
       Urusai.Error('Error happened when processing request:', this._Request!.Method, requestUrl);
       Urusai.Error('Original error message:', e.message);
       return false;

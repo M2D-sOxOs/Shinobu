@@ -86,6 +86,7 @@ export class Request {
 
     let isFailure = 0 == flowObject.Flow.length;
     for (let flowIndex = 0; flowIndex < flowObject.Flow.length; flowIndex++) {
+      sessionStorage.__THIS__ = await flowObject.Flow[flowIndex].Value();
       if (false === await this.__Execute(flowObject.Flow[flowIndex].Expression ? flowObject.Flow[flowIndex].Expression.replace(/^./, '#') : '#' + flowIndex, await flowObject.Flow[flowIndex].Value(), sessionStorage, flowZone)) {
         isFailure = true;
         break;
