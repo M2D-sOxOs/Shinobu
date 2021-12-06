@@ -66,6 +66,7 @@ export class JSON extends Delegator {
           return status >= 200 && status < 400;
         },
         transformResponse: (rawData: any) => {
+          console.log(rawData);
           return global.JSON.parse(this._Request?.Encoding ? encoding.convert(rawData, 'utf8', this._Request?.Encoding) : rawData)
         }
       });

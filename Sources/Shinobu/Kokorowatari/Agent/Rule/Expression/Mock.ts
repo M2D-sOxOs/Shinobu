@@ -3,6 +3,10 @@ import { Table } from "../../Rule";
 import { Base } from "./Mock/Base";
 import { UUID } from "./Mock/UUID";
 import { DPOP } from "./Mock/DPOP";
+import { MercariSessionCode } from "./Mock/MercariSessionCode";
+import { MercariSessionCodeChallenge } from "./Mock/MercariSessionCodeChallenge";
+import { MercariSessionNonce } from "./Mock/MercariSessionNonce";
+import { MercariSessionState } from "./Mock/MercariSessionState";
 import { RakutenPage } from "./Mock/RakutenPage";
 import { RakutenPaged } from "./Mock/RakutenPaged";
 import { RakutenSort } from "./Mock/RakutenSort";
@@ -29,6 +33,18 @@ export class Mock {
       case '@DPOP':
         this.__Mocker = new DPOP();
         return;
+      case '@MercariSessionCode':
+        this.__Mocker = new MercariSessionCode();
+        return;
+      case '@MercariSessionCodeChallenge':
+        this.__Mocker = new MercariSessionCodeChallenge();
+        return;
+      case '@MercariSessionNonce':
+        this.__Mocker = new MercariSessionNonce();
+        return;
+      case '@MercariSessionState':
+        this.__Mocker = new MercariSessionState();
+        return;
       case '@RakutenPage':
         this.__Mocker = new RakutenPage();
         return;
@@ -53,6 +69,7 @@ export class Mock {
   }
 
   public async Value(sessionStorage: Table<Table<string>>, flowZone?: any): Promise<string> {
+    if ('' == this.Name) return await this.__Mocker.Value(this.Key, sessionStorage, flowZone);
     sessionStorage[this.Name] || (sessionStorage[this.Name] = {});
     return sessionStorage[this.Name][this.Key] || (sessionStorage[this.Name][this.Key] = await this.__Mocker.Value(this.Key, sessionStorage, flowZone));
   }
