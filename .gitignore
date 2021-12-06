@@ -6,3 +6,5 @@ pacakge-lock.json
 /Cache
 
 Proxies.json
+
+.DS_Store
