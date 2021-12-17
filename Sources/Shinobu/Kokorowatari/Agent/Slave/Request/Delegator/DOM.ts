@@ -122,31 +122,8 @@ export class DOM extends Delegator {
       await processor.Process(domObject, this.Session, scopeZone);
     });
 
-    this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), scopeZone, domObject.root(), this.Command.DOM!.Result);
-
-    return true;
-  }
-
-  private async __PerformResultDOMX(scopeZone: any): Promise<boolean> {
-
-    const domObject: cheerio.Root = load(scopeZone['__RESPONSE__'], {
-      xmlMode: true,
-      decodeEntities: true
-    });
-
-    if (!(await this._DOM.Indicator.Estimate(domObject, this.Session, scopeZone))) {
-      Urusai.Warning('Result is not passing indicator exam');
-      return false;
-    }
-
-    /**
-     * Perform pre-processors
-     */
-    this._DOM.Preprocess?.forEach(async (processor) => {
-      await processor.Process(domObject, this.Session, scopeZone);
-    });
-
-    this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), scopeZone, domObject.root(), this.Command.DOM!.Result);
+    scopeZone['__RESULT__'] = (this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), scopeZone, domObject.root(), this.Command.DOM!.Result));
+    if (this._DOM.Stash) scopeZone.__STASH__[this._DOM.Stash] = scopeZone['__RESULT__'];
 
     return true;
   }

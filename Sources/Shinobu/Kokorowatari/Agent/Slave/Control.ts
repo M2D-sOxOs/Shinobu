@@ -35,7 +35,7 @@ export class Control {
     const proxy: Expression = new Expression('*' + proxyName);
 
     const sessionStorage = { Proxy: await proxy.Value() };
-    const flowZone = { __IN__: inputData };
+    const flowZone = { __IN__: inputData, __STASH__: {} };
     await Request.Execute(commandName, sessionStorage, flowZone);
     Urusai.Verbose('Request executed and completed');
     Urusai.Verbose('Session Storage:', sessionStorage);

@@ -8,6 +8,7 @@ export type DOMConfig = {
   Model?: ModelConfig,
   Preprocess?: ProcessorConfig[],
   Indicator: ConditionConfig[],
+  Stash?: string;
   Result?: ResultConfig
 }
 
@@ -21,11 +22,14 @@ export class DOM {
   
   public readonly Indicator: Condition;
 
+  public readonly Stash?: string;
+
   public readonly Result?: Result;
 
   constructor(domConfig: DOMConfig) {
 
     this.Strict = domConfig.Strict;
+    this.Stash = domConfig.Stash;
 
     if (domConfig.Model) this.Model = new Model(domConfig.Model);;
 
