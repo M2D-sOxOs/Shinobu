@@ -123,7 +123,7 @@ export class DOM extends Delegator {
     });
 
     scopeZone['__RESULT__'] = (this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(domObject.root(), scopeZone, domObject.root(), this.Command.DOM!.Result));
-    if (this._DOM.Stash) scopeZone.__STASH__[this._DOM.Stash] = scopeZone['__RESULT__'];
+    if (this._DOM.Stash) this.FlowZone.__STASH__[this._DOM.Stash] = scopeZone['__RESULT__'];
 
     return true;
   }

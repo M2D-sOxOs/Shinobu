@@ -38,7 +38,7 @@ export class INSET extends Delegator {
   protected async _PerformResult(scopeZone: any): Promise<boolean> {
 
     this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(scopeZone, this._INSET.Result);
-    if (this._INSET.Stash) scopeZone.__STASH__[this._INSET.Stash] = scopeZone['__RESULT__'];
+    if (this._INSET.Stash) this.FlowZone.__STASH__[this._INSET.Stash] = scopeZone['__RESULT__'];
     return true;
   }
 

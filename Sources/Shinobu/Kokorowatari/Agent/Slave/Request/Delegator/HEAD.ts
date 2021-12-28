@@ -90,7 +90,7 @@ export class HEAD extends Delegator {
     }
 
     scopeZone['__RESULT__'] = (this.FlowZone['__RESULT__'] = await this.__PerformResultStructure(scopeZone, this._HEAD.Result));
-    if (this._HEAD.Stash) scopeZone.__STASH__[this._HEAD.Stash] = scopeZone['__RESULT__'];
+    if (this._HEAD.Stash) this.FlowZone.__STASH__[this._HEAD.Stash] = scopeZone['__RESULT__'];
     if (this._HEAD.Postprocess) return await this._HEAD.Postprocess.Value(this.Session, scopeZone);
     return true;
   }
