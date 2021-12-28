@@ -209,7 +209,7 @@ export class Master {
    */
   public static async Perform(flowName: string, userInput: Table<string>, requestId: string): Promise<string | null> {
 
-    return await this.__Perform(new Expression('*' + flowName), { __IN__: userInput }, requestId);
+    return await this.__Perform(new Expression('*' + flowName), { __IN__: userInput, __STASH__: {} }, requestId);
   }
 
   private static async __Perform(flowExpr: Expression, flowZone: any, requestId: string): Promise<string | null> {

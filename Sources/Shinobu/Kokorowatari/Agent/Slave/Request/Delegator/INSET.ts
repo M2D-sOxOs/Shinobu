@@ -30,8 +30,6 @@ export class INSET extends Delegator {
   }
 
   protected async _PerformRequest(scopeZone: any): Promise<boolean> {
-    console.log(1);
-
     return true;
   }
 
