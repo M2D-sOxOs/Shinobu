@@ -57,31 +57,31 @@ export class Request {
 
     const sessionStorage: any = {};
 
-    if (flowObject.Proxy && (<Proxy>await flowObject.Proxy.Value()).Enabled) {
+    if (flowObject.Proxy && (<Proxy[]>await flowObject.Proxy.Value()).reduce((a, b) => a || b.Enabled, false)) {
 
-      const proxy: Proxy = await flowObject.Proxy.Value();
-      switch (proxy.Provider) {
-        case 'SOCKS5':
-          Urusai.Verbose('Using SOCKS5 as proxy server');
-          sessionStorage.Proxy = {
-            httpAgent: new SocksProxyAgent({
-              host: proxy.Server,
-              port: proxy.Port
-            }),
-            httpsAgent: new SocksProxyAgent({
-              host: proxy.Server,
-              port: proxy.Port
-            })
-          };
-          break;
-        case 'HTTP':
-          Urusai.Verbose('Using HTTP as proxy server');
-          sessionStorage.Proxy = {
-            httpAgent: httpOverHttp({ proxy: { host: proxy.Server, port: proxy.Port } }),
-            httpsAgent: httpsOverHttp({ proxy: { host: proxy.Server, port: proxy.Port } })
-          };
-          break;
-      }
+      const proxies: Proxy[] = await flowObject.Proxy.Value();
+      sessionStorage.Proxy = proxies.map(proxy => {
+        switch (proxy.Provider) {
+          case 'SOCKS5':
+            Urusai.Verbose('Using SOCKS5 as proxy server');
+            return {
+              httpAgent: new SocksProxyAgent({
+                host: proxy.Server,
+                port: proxy.Port
+              }),
+              httpsAgent: new SocksProxyAgent({
+                host: proxy.Server,
+                port: proxy.Port
+              })
+            };
+          case 'HTTP':
+            Urusai.Verbose('Using HTTP as proxy server');
+            return {
+              httpAgent: httpOverHttp({ proxy: { host: proxy.Server, port: proxy.Port } }),
+              httpsAgent: httpsOverHttp({ proxy: { host: proxy.Server, port: proxy.Port } })
+            };
+        }
+      });
     }
 
     let isFailure = 0 == flowObject.Flow.length;

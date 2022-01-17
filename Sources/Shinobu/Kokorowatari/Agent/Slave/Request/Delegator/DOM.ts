@@ -60,8 +60,8 @@ export class DOM extends Delegator {
         params: inflatedParameters,
         data: 'GET' == this._Request!.Method ? undefined : ('application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : inflatedFormFields),
         timeout: this._Request!.Timeout,
-        httpAgent: this.Session.Proxy ? this.Session.Proxy.httpAgent : undefined,
-        httpsAgent: this.Session.Proxy ? this.Session.Proxy.httpsAgent : undefined,
+        httpAgent: this.Session.Proxy ? this.Session.Proxy[Math.ceil(Math.random() * 10000) % this.Session.Proxy.length].httpAgent : undefined,
+        httpsAgent: this.Session.Proxy ? this.Session.Proxy[Math.ceil(Math.random() * 10000) % this.Session.Proxy.length].httpsAgent : undefined,
         maxRedirects: 0,
         responseType: 'arraybuffer',
         validateStatus: (status: number) => {
