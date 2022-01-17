@@ -57,6 +57,7 @@ export class Request {
 
     const sessionStorage: any = {};
 
+    console.log('FFFF', await flowObject.Proxy?.Value());
     if (flowObject.Proxy && (<Proxy[]>await flowObject.Proxy.Value()).reduce((a, b) => a || b.Enabled, false)) {
 
       const proxies: Proxy[] = await flowObject.Proxy.Value();
