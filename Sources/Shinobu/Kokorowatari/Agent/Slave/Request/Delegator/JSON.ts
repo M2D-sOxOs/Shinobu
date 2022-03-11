@@ -45,7 +45,7 @@ export class JSON extends Delegator {
 
       Urusai.Verbose('Request headers:', inflatedHeaders);
       Urusai.Verbose('Request parameters:', inflatedParameters);
-      Urusai.Verbose('Request forms:', inflatedFormFields);
+      Urusai.Verbose('Request forms:', 'GET' == this._Request!.Method ? undefined : ('application/x-www-form-urlencoded' == inflatedHeaders['Content-Type'] ? stringify(inflatedFormFields) : global.JSON.stringify(inflatedFormFields)));
       Urusai.Verbose('Performing request:', requestUrl);
 
       scopeZone['__REQUEST_HEADERS__'] = inflatedHeaders;

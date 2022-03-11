@@ -13,6 +13,7 @@ import { RakutenSort } from "./Mock/RakutenSort";
 import { RakutenCondition } from "./Mock/RakutenCondition";
 import { RakutenFilters } from "./Mock/RakutenFilters";
 import { BoothSort } from "./Mock/BoothSort";
+import { MD5 } from "./Mock/MD5";
 
 export class Mock {
 
@@ -32,6 +33,9 @@ export class Mock {
         return;
       case '@DPOP':
         this.__Mocker = new DPOP();
+        return;
+      case '@MD5':
+        this.__Mocker = new MD5();
         return;
       case '@MercariSessionCode':
         this.__Mocker = new MercariSessionCode();

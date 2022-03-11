@@ -47,7 +47,7 @@ export class DPOP extends Base {
       iat: Math.floor(Date.now() / 1000),
       jti: v4(),
       htu: (await (<any>sessionStorage).__THIS__.Client.Value()).Host + (await (<any>sessionStorage).__THIS__.Request.URL.Value()),
-      htm: 'GET',
+      htm: (<any>sessionStorage).__THIS__.Request.Method,
       uuid: uuid
     });
 
